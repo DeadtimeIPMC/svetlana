@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#FFF0F5">
+    <title>Для Светланы 💖</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        body { font-family: 'Nunito', sans-serif; background: linear-gradient(135deg, #FFF0F5 0%, #FFE4E1 50%, #FFF8F0 100%); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; overscroll-behavior-y: none; }
+        body.night-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
+        .glass { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5); }
+        body.night-mode .glass { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
+        .glass-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 8px 32px rgba(255,182,193,0.15), inset 0 1px 0 rgba(255,255,255,0.6); transition: transform 0.1s ease-out; transform-style: preserve-3d; }
+        body.night-mode .glass-card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1); }
+        body.night-mode .glass-card h3, body.night-mode .glass-card p { color: rgba(255,255,255,0.9); }
+        body.night-mode .text-gray-700 { color: rgba(255,255,255,0.9) !important; }
+        body.night-mode .text-gray-400 { color: rgba(255,255,255,0.5) !important; }
+        body.night-mode .text-gray-600 { color: rgba(255,255,255,0.7) !important; }
+        .btn-mood { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative; overflow: hidden; transform-style: preserve-3d; }
+        .btn-mood:active { transform: scale(0.95); }
+        .btn-mood::after { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255,255,255,0.4); transform: translate(-50%,-50%); transition: width 0.6s, height 0.6s; }
+        .btn-mood:active::after { width: 300px; height: 300px; }
+        .heart-particle { position: fixed; pointer-events: none; animation: floatUp 4s ease-out forwards; opacity: 0; z-index: 5; }
+        @keyframes floatUp { 0% { opacity: 0; transform: translateY(0) scale(0) rotate(0deg); } 20% { opacity: 0.8; transform: translateY(-20px) scale(1) rotate(10deg); } 100% { opacity: 0; transform: translateY(-300px) scale(0.5) rotate(360deg); } }
+        .message-card { animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .message-card.closing { animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .typing-cursor::after { content: '|'; animation: blink 1s infinite; color: #FB7185; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .confetti-piece { position: fixed; pointer-events: none; z-index: 100; animation: confetti 1.5s ease-out forwards; }
+        @keyframes confetti { 0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); } 100% { opacity: 0; transform: translateY(-300px) rotate(720deg) scale(0.5); } }
+        .daily-card { background: linear-gradient(135deg, rgba(255,228,230,0.9), rgba(255,240,245,0.9)); border: 2px solid rgba(251,113,133,0.3); }
+        body.night-mode .daily-card { background: linear-gradient(135deg, rgba(251,113,133,0.15), rgba(192,132,252,0.1)); border: 2px solid rgba(251,113,133,0.2); }
+        body.night-mode .daily-card p { color: rgba(255,255,255,0.8); }
+        .gradient-text { background: linear-gradient(135deg, #FB7185, #F472B6, #C084FC); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        body.night-mode .gradient-text { background: linear-gradient(135deg, #FDA4AF, #F9A8D4, #C4B5FD); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .floating-bg { position: fixed; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+        .bg-shape { position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.4; animation: float 8s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-20px); } }
+        .ios-notch { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
+        .mood-meter { transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .streak-flame { animation: flame 1s ease-in-out infinite alternate; }
+        @keyframes flame { 0% { transform: scale(1) rotate(-2deg); } 100% { transform: scale(1.1) rotate(2deg); } }
+        .star { position: fixed; background: white; border-radius: 50%; pointer-events: none; animation: twinkle var(--duration) ease-in-out infinite; animation-delay: var(--delay); }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
+        .shooting-star { position: fixed; width: 100px; height: 2px; background: linear-gradient(90deg, white, transparent); pointer-events: none; animation: shoot 2s linear forwards; opacity: 0; }
+        @keyframes shoot { 0% { transform: translateX(0) translateY(0) rotate(-45deg); opacity: 1; } 100% { transform: translateX(300px) translateY(300px) rotate(-45deg); opacity: 0; } }
+        .garden-flower { transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); filter: grayscale(100%); opacity: 0.3; }
+        .garden-flower.bloomed { filter: grayscale(0%); opacity: 1; animation: bloom 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes bloom { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        .calendar-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.75rem; font-weight: 600; transition: all 0.3s ease; }
+        .calendar-day.visited { background: linear-gradient(135deg, #FB7185, #F472B6); color: white; box-shadow: 0 2px 8px rgba(251,113,133,0.3); }
+        .calendar-day.today { border: 2px solid #FB7185; }
+        .theme-dot { transition: all 0.3s ease; cursor: pointer; }
+        .theme-dot:hover { transform: scale(1.2); }
+        .theme-dot.active { transform: scale(1.3); box-shadow: 0 0 0 3px rgba(251,113,133,0.3); }
+        .shake-hint { animation: shakeHint 2s ease-in-out infinite; }
+        @keyframes shakeHint { 0%, 100% { transform: rotate(0deg); } 10% { transform: rotate(-5deg); } 20% { transform: rotate(5deg); } 30% { transform: rotate(-3deg); } 40% { transform: rotate(3deg); } 50% { transform: rotate(0deg); } }
+        .capture-btn { transition: all 0.2s ease; }
+        .capture-btn:active { transform: scale(0.9); }
+        .feedback-btn { transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .feedback-btn:active { transform: scale(0.9); }
+        @keyframes scaleIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes slideUp { 0% { opacity: 0; transform: translateY(30px); } 100% { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(100px) scale(0.8); } }
+        @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+        @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+        .breathing-circle { animation: breathe 4s ease-in-out infinite; }
+        @keyframes breathe { 0%, 100% { transform: scale(1); opacity: 0.6; } 50% { transform: scale(1.15); opacity: 0.3; } }
+        .quote-card { transition: all 0.3s ease; }
+        .quote-card:hover { transform: translateY(-2px); }
+        .achievement-badge { animation: badgePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        @keyframes badgePop { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .photo-frame { border: 3px solid rgba(255,255,255,0.6); border-radius: 16px; overflow: hidden; box-shadow: 0 8px 32px rgba(255,182,193,0.2); }
+        .touch-particle { position: fixed; pointer-events: none; border-radius: 50%; background: radial-gradient(circle, rgba(251,113,133,0.4), transparent); animation: touchExpand 0.8s ease-out forwards; }
+        @keyframes touchExpand { 0% { transform: scale(0); opacity: 1; } 100% { transform: scale(3); opacity: 0; } }
+        .weather-icon { animation: weatherFloat 3s ease-in-out infinite; }
+        @keyframes weatherFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .letter-card { background: linear-gradient(135deg, rgba(255,248,240,0.95), rgba(255,240,245,0.95)); border: 1px solid rgba(251,113,133,0.2); }
+        body.night-mode .letter-card { background: linear-gradient(135deg, rgba(30,30,60,0.95), rgba(40,30,60,0.95)); border: 1px solid rgba(251,113,133,0.2); }
+        .holiday-bg { position: fixed; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+        .holiday-item { position: fixed; pointer-events: none; animation: holidayFall linear forwards; }
+        @keyframes holidayFall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+        .tilt-container { transform-style: preserve-3d; perspective: 1000px; }
+        .speak-btn { transition: all 0.2s ease; }
+        .speak-btn.active { background: linear-gradient(135deg, #FB7185, #F472B6); color: white; }
+        .sync-indicator { position: fixed; bottom: 10px; right: 10px; z-index: 100; font-size: 10px; opacity: 0.5; }
+    </style>
+<base target="_blank">
+</head>
+<body class="ios-notch text-gray-800">
+
+    <div id="stars-container" class="floating-bg hidden"></div>
+    <div id="holiday-container" class="holiday-bg hidden"></div>
+    <div class="floating-bg" id="day-bg">
+        <div class="bg-shape bg-rose-200 w-64 h-64 top-10 -left-20" style="animation-delay:0s"></div>
+        <div class="bg-shape bg-pink-200 w-48 h-48 top-40 right-10" style="animation-delay:2s"></div>
+        <div class="bg-shape bg-orange-100 w-56 h-56 bottom-20 left-20" style="animation-delay:4s"></div>
+        <div class="bg-shape bg-purple-100 w-40 h-40 bottom-40 right-20" style="animation-delay:1s"></div>
+    </div>
+
+    <div id="app" class="relative z-10 max-w-md mx-auto min-h-screen flex flex-col">
+
+        <div id="welcome-screen" class="flex-1 flex flex-col items-center justify-center px-6 text-center" style="animation: fadeIn 0.5s ease-out forwards;">
+            <div class="mb-8 relative">
+                <div class="absolute inset-0 bg-rose-200 rounded-full blur-2xl opacity-30 breathing-circle"></div>
+                <div class="relative text-6xl" style="animation: bounce-slow 2s ease-in-out infinite;">💖</div>
+            </div>
+            <h1 class="text-3xl font-bold mb-3 gradient-text leading-tight" id="welcome-title">Для самой<br>прекрасной Светланы</h1>
+            <p class="text-rose-400 text-lg mb-6 font-medium opacity-80">Твоё личное уютное местечко</p>
+            <div class="flex gap-2 mb-6" id="welcome-badges"></div>
+            <button onclick="showMain()" class="glass-card px-10 py-4 rounded-full text-rose-500 font-bold text-lg hover:shadow-lg hover:shadow-rose-200/50 transition-all duration-300 active:scale-95 group">
+                <span class="group-hover:scale-110 inline-block transition-transform">Открыть с любовью ✨</span>
+            </button>
+            <div class="mt-6 glass rounded-2xl p-4 max-w-xs mx-auto">
+                <p class="text-sm text-gray-500 italic" id="welcome-quote">«Любовь — это когда счастье другого человека важнее твоего»</p>
+            </div>
+            <div class="mt-8 flex gap-2 text-2xl opacity-60">
+                <span style="animation: pulse-slow 3s ease-in-out infinite; animation-delay:0s">🌸</span>
+                <span style="animation: pulse-slow 3s ease-in-out infinite; animation-delay:0.2s">✨</span>
+                <span style="animation: pulse-slow 3s ease-in-out infinite; animation-delay:0.4s">💕</span>
+                <span style="animation: pulse-slow 3s ease-in-out infinite; animation-delay:0.6s">🌷</span>
+            </div>
+            <div class="mt-6 flex items-center gap-2 text-xs text-rose-300 opacity-60 shake-hint" id="shake-hint">
+                <span>📱</span><span>Потряси телефон для сюрприза</span>
+            </div>
+        </div>
+
+        <div id="main-screen" class="hidden flex-1 flex flex-col px-5 pt-6 pb-6 tilt-container">
+            <div class="text-center mb-4" style="animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="inline-flex items-center gap-2 glass px-4 py-2 rounded-full">
+                        <span class="text-rose-400">💝</span>
+                        <span class="text-sm font-semibold text-rose-500" id="greeting-text">Привет, Светлана</span>
+                    </div>
+                    <div class="flex gap-1 items-center">
+                        <button onclick="toggleSpeak()" id="speak-btn" class="speak-btn w-8 h-8 rounded-full glass flex items-center justify-center text-rose-400 text-xs" title="Озвучка">🗣️</button>
+                        <button onclick="toggleSound()" id="sound-btn" class="w-8 h-8 rounded-full glass flex items-center justify-center text-rose-400 text-xs">🔊</button>
+                        <div class="theme-dot active w-6 h-6 rounded-full bg-gradient-to-br from-rose-200 to-pink-300" onclick="setTheme('rose')" title="Розовая мечта"></div>
+                        <div class="theme-dot w-6 h-6 rounded-full bg-gradient-to-br from-purple-200 to-indigo-300" onclick="setTheme('lavender')" title="Вечерняя лаванда"></div>
+                        <div class="theme-dot w-6 h-6 rounded-full bg-gradient-to-br from-orange-100 to-amber-200" onclick="setTheme('peach')" title="Утренний персик"></div>
+                    </div>
+                </div>
+
+                <div id="daily-message" class="daily-card rounded-2xl p-4 mb-3 cursor-pointer active:scale-95 transition-transform" onclick="showDailySpecial()">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">✨ Сегодняшнее послание</span>
+                        <span class="streak-flame text-sm">🔥</span>
+                    </div>
+                    <p class="text-sm text-gray-600 font-medium" id="daily-preview">Нажми, чтобы открыть особенное сообщение на сегодня...</p>
+                    <div class="mt-2 flex items-center gap-1">
+                        <svg class="w-3 h-3 text-rose-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                        <span class="text-xs text-rose-300" id="streak-text">День 1</span>
+                    </div>
+                </div>
+
+                <div id="weather-widget" class="glass rounded-2xl p-3 mb-3 flex items-center gap-3 hidden">
+                    <div class="text-3xl weather-icon" id="weather-emoji">☀️</div>
+                    <div class="flex-1 text-left">
+                        <p class="text-sm font-bold text-gray-700" id="weather-temp">--°C</p>
+                        <p class="text-xs text-gray-400" id="weather-desc">Загрузка...</p>
+                    </div>
+                    <div class="text-xs text-rose-400 font-medium text-right" id="weather-message"></div>
+                </div>
+
+                <h2 class="text-2xl font-bold text-gray-700 mb-1">Как ты себя чувствуешь?</h2>
+                <p class="text-gray-400 text-sm">Нажми на кнопку, и я подниму тебе настроение</p>
+            </div>
+
+            <div class="glass rounded-2xl p-3 mb-3 flex items-center gap-3">
+                <div class="flex-1">
+                    <div class="flex justify-between text-xs text-gray-400 mb-1">
+                        <span>Настроение Светланы</span>
+                        <span id="mood-percent" class="text-rose-400 font-bold">50%</span>
+                    </div>
+                    <div class="h-2 bg-rose-100 rounded-full overflow-hidden">
+                        <div id="mood-bar" class="mood-meter h-full bg-gradient-to-r from-rose-300 to-rose-400 rounded-full" style="width:50%"></div>
+                    </div>
+                </div>
+                <div class="text-2xl" id="mood-emoji">🙂</div>
+            </div>
+
+            <div class="glass rounded-2xl p-3 mb-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">🌸 Твой сад заботы</span>
+                    <span class="text-xs text-gray-400" id="garden-count">0/12 цветов</span>
+                </div>
+                <div class="flex justify-center gap-2 flex-wrap" id="garden-container"></div>
+            </div>
+
+            <div class="glass rounded-2xl p-3 mb-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">📅 Твои хорошие дни</span>
+                    <span class="text-xs text-gray-400" id="calendar-month"></span>
+                </div>
+                <div class="grid grid-cols-7 gap-1 text-center" id="calendar-grid"></div>
+            </div>
+
+            <div class="glass rounded-2xl p-3 mb-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">🏆 Достижения</span>
+                    <span class="text-xs text-gray-400" id="achievements-count">0/6</span>
+                </div>
+                <div class="flex justify-center gap-3 flex-wrap" id="achievements-container"></div>
+            </div>
+
+            <div class="glass rounded-2xl p-3 mb-3 quote-card">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">💭 Цитата дня</span>
+                    <button onclick="newQuote()" class="text-xs text-rose-300 hover:text-rose-500 transition-colors">🔄</button>
+                </div>
+                <p class="text-sm text-gray-600 italic text-center" id="daily-quote">«Любовь — это когда счастье другого человека важнее твоего»</p>
+            </div>
+
+            <div id="birthday-section" class="glass rounded-2xl p-3 mb-3 hidden">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">🎂 Особенная дата</span>
+                </div>
+                <p class="text-sm text-gray-600 text-center" id="birthday-countdown"></p>
+            </div>
+
+            <div class="glass rounded-2xl p-3 mb-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">📸 Наше воспоминание</span>
+                </div>
+                <div id="photo-memory" class="hidden">
+                    <div class="photo-frame mb-2">
+                        <img id="memory-img" class="w-full h-48 object-cover" alt="Воспоминание">
+                    </div>
+                    <p class="text-xs text-gray-400 text-center" id="memory-caption"></p>
+                </div>
+                <div id="photo-upload" class="text-center">
+                    <label class="cursor-pointer">
+                        <input type="file" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
+                        <div class="border-2 border-dashed border-rose-200 rounded-xl p-4 hover:border-rose-400 transition-colors">
+                            <span class="text-2xl">📷</span>
+                            <p class="text-xs text-gray-400 mt-1">Загрузить фото</p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-3 mb-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">💌 Послание в будущее</span>
+                </div>
+                <div id="future-letter-display" class="hidden mb-2">
+                    <div class="letter-card rounded-xl p-3 text-center">
+                        <p class="text-sm text-gray-600" id="future-letter-text"></p>
+                        <p class="text-xs text-rose-400 mt-1" id="future-letter-date"></p>
+                    </div>
+                </div>
+                <div id="future-letter-form">
+                    <input type="date" id="future-date" class="w-full mb-2 px-3 py-2 rounded-xl bg-white/50 border border-rose-200 text-sm text-gray-600 focus:outline-none focus:border-rose-400">
+                    <textarea id="future-text" placeholder="Напиши письмо себе..." class="w-full mb-2 px-3 py-2 rounded-xl bg-white/50 border border-rose-200 text-sm text-gray-600 focus:outline-none focus:border-rose-400 resize-none" rows="2"></textarea>
+                    <button onclick="saveFutureLetter()" class="w-full py-2 rounded-xl bg-gradient-to-r from-rose-400 to-pink-400 text-white text-sm font-bold shadow-md">Сохранить письмо 📬</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 gap-3 mb-4">
+                <button onclick="showMessage('sad')" class="btn-mood glass-card p-4 rounded-3xl flex items-center gap-4 text-left group hover:shadow-lg hover:shadow-rose-100/50">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">😢</div>
+                    <div class="flex-1"><h3 class="font-bold text-gray-700 text-base">Я грущу</h3><p class="text-gray-400 text-xs">Нужно немного тепла</p></div>
+                    <div class="text-rose-300 opacity-0 group-hover:opacity-100 transition-opacity">→</div>
+                </button>
+                <button onclick="showMessage('miss')" class="btn-mood glass-card p-4 rounded-3xl flex items-center gap-4 text-left group hover:shadow-lg hover:shadow-rose-100/50">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-100 to-amber-50 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">🥺</div>
+                    <div class="flex-1"><h3 class="font-bold text-gray-700 text-base">Я скучаю</h3><p class="text-gray-400 text-xs">Хочу чувствовать близость</p></div>
+                    <div class="text-rose-300 opacity-0 group-hover:opacity-100 transition-opacity">→</div>
+                </button>
+                <button onclick="showMessage('lonely')" class="btn-mood glass-card p-4 rounded-3xl flex items-center gap-4 text-left group hover:shadow-lg hover:shadow-rose-100/50">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-100 to-purple-50 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">🌙</div>
+                    <div class="flex-1"><h3 class="font-bold text-gray-700 text-base">Мне одиноко</h3><p class="text-gray-400 text-xs">Нужно знать, что я не одна</p></div>
+                    <div class="text-rose-300 opacity-0 group-hover:opacity-100 transition-opacity">→</div>
+                </button>
+                <button onclick="showMessage('support')" class="btn-mood glass-card p-4 rounded-3xl flex items-center gap-4 text-left group hover:shadow-lg hover:shadow-rose-100/50">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-100 to-emerald-50 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">🤗</div>
+                    <div class="flex-1"><h3 class="font-bold text-gray-700 text-base">Мне нужна поддержка</h3><p class="text-gray-400 text-xs">Слова, которые помогут</p></div>
+                    <div class="text-rose-300 opacity-0 group-hover:opacity-100 transition-opacity">→</div>
+                </button>
+                <button onclick="showMessage('cute')" class="btn-mood glass-card p-4 rounded-3xl flex items-center gap-4 text-left group hover:shadow-lg hover:shadow-rose-100/50">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-100 to-pink-50 flex items-center justify-center text-2xl shadow-sm group-hover:scale-110 transition-transform">🌸</div>
+                    <div class="flex-1"><h3 class="font-bold text-gray-700 text-base">Хочу услышать что-то милое</h3><p class="text-gray-400 text-xs">Комплименты и нежность</p></div>
+                    <div class="text-rose-300 opacity-0 group-hover:opacity-100 transition-opacity">→</div>
+                </button>
+            </div>
+
+            <button onclick="openReply()" class="mb-3 mx-auto flex items-center gap-2 glass px-5 py-2.5 rounded-full text-sm text-rose-500 font-semibold hover:shadow-md transition-all active:scale-95">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                Написать ответ
+            </button>
+
+            <div class="mt-auto text-center">
+                <div class="glass inline-flex items-center gap-2 px-4 py-2 rounded-full">
+                    <span class="text-xs text-rose-400 font-medium">Сделано с любовью 💕</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="message-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center p-5">
+            <div class="absolute inset-0 bg-black/20 backdrop-blur-sm" onclick="closeMessage()"></div>
+            <div id="message-card-inner" class="message-card glass-card w-full max-w-sm rounded-[2rem] p-8 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-rose-100 to-transparent rounded-full -mr-10 -mt-10 opacity-50"></div>
+                <div class="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-pink-100 to-transparent rounded-full -ml-8 -mb-8 opacity-50"></div>
+                <button onclick="closeMessage()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/50 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors z-10">✕</button>
+                <div class="relative z-10 text-center">
+                    <div class="text-5xl mb-4" style="animation: bounce-slow 2s ease-in-out infinite;" id="message-emoji">💌</div>
+                    <div class="min-h-[120px] flex items-center justify-center mb-6">
+                        <p id="message-text" class="text-xl font-semibold text-gray-700 leading-relaxed typing-cursor"></p>
+                    </div>
+                    <button onclick="speakCurrentMessage()" id="msg-speak-btn" class="mb-3 mx-auto flex items-center gap-2 glass px-4 py-2 rounded-full text-sm text-rose-500 font-semibold hover:shadow-md">
+                        <span>🗣️</span> Озвучить
+                    </button>
+                    <button onclick="captureMoment()" class="capture-btn mb-4 mx-auto flex items-center gap-2 glass px-4 py-2 rounded-full text-sm text-rose-500 font-semibold hover:shadow-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        Сохранить момент
+                    </button>
+                    <div class="flex justify-center gap-3 mb-2">
+                        <span class="text-2xl" style="animation: pulse-slow 3s ease-in-out infinite; animation-delay:0s">💖</span>
+                        <span class="text-2xl" style="animation: pulse-slow 3s ease-in-out infinite; animation-delay:0.3s">✨</span>
+                        <span class="text-2xl" style="animation: pulse-slow 3s ease-in-out infinite; animation-delay:0.6s">🌸</span>
+                    </div>
+                    <p class="text-xs text-rose-300 mt-4 font-medium">Ты особенная 💕</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="feedback-screen" class="hidden fixed inset-0 z-50 flex items-center justify-center p-5">
+            <div class="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
+            <div class="message-card glass-card w-full max-w-sm rounded-[2rem] p-8 relative text-center">
+                <div class="text-4xl mb-4">💭</div>
+                <h3 class="text-xl font-bold text-gray-700 mb-2">Помогло?</h3>
+                <p class="text-gray-400 text-sm mb-6">Твоё настроение важно для меня</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="handleFeedback(true)" class="feedback-btn flex-1 bg-gradient-to-br from-rose-400 to-pink-400 text-white py-3 rounded-2xl font-bold shadow-lg shadow-rose-200/50">Да! 💖</button>
+                    <button onclick="handleFeedback(false)" class="feedback-btn flex-1 glass text-gray-600 py-3 rounded-2xl font-bold">Ещё нет 🌸</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="toast" class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 z-[60] glass px-6 py-3 rounded-full shadow-lg" style="animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+            <span id="toast-text" class="text-sm font-semibold text-rose-500">Сохранено! 💕</span>
+        </div>
+    </div>
+
+    <script>
+
+                osc.stop(audioCtx.currentTime + 0.3);
+            } catch(e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-btn').textContent = soundEnabled ? '🔊' : '🔇';
+            showToast(soundEnabled ? 'Звук включен 🔊' : 'Звук выключен 🔇');
+        }
+
+        function initQuote() {
+            const today = new Date();
+            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+            const quote = quotes[dayOfYear % quotes.length];
+            document.getElementById('daily-quote').textContent = quote;
+            document.getElementById('welcome-quote').textContent = quote;
+        }
+
+        function newQuote() {
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            document.getElementById('daily-quote').textContent = randomQuote;
+        }
+
+        function initAchievements() {
+            const container = document.getElementById('achievements-container');
+            const welcomeContainer = document.getElementById('welcome-badges');
+            const unlocked = sGet('svetlana_achievements', []);
+            let count = 0;
+            container.innerHTML = '';
+            welcomeContainer.innerHTML = '';
+            achievements.forEach(ach => {
+                const isUnlocked = unlocked.includes(ach.id) || ach.condition();
+                if (isUnlocked && !unlocked.includes(ach.id)) {
+                    unlocked.push(ach.id);
+                    sSet('svetlana_achievements', unlocked);
+                }
+                const badge = document.createElement('div');
+                badge.className = 'text-2xl ' + (isUnlocked ? 'achievement-badge' : 'opacity-30 grayscale');
+                badge.textContent = ach.icon;
+                badge.title = ach.name + (isUnlocked ? '' : ' (заблокировано)');
+                container.appendChild(badge);
+                if (isUnlocked) {
+                    const welcomeBadge = document.createElement('span');
+                    welcomeBadge.className = 'text-xl';
+                    welcomeBadge.textContent = ach.icon;
+                    welcomeContainer.appendChild(welcomeBadge);
+                    count++;
+                }
+            });
+            document.getElementById('achievements-count').textContent = count + '/' + achievements.length;
+        }
+
+        function initDailyMessage() {
+            const today = new Date();
+            const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
+            const dailyMsg = dailyMessages[dayOfYear % dailyMessages.length];
+            const lastVisit = sGet('svetlana_last_visit', '');
+            const todayStr = today.toDateString();
+            let streak = sGet('svetlana_streak', 0);
+            if (lastVisit === todayStr) {
+                dailyShown = sGet('svetlana_daily_shown', false);
+            } else {
+                const lastDate = lastVisit ? new Date(lastVisit) : null;
+                const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+                if (lastDate && lastDate.toDateString() === yesterday.toDateString()) streak++;
+                else if (!lastDate || lastDate.toDateString() !== todayStr) streak = 1;
+                sSet('svetlana_last_visit', todayStr);
+                sSet('svetlana_streak', streak);
+                sSet('svetlana_daily_shown', false);
+                dailyShown = false;
+            }
+            document.getElementById('daily-preview').textContent = dailyMsg.substring(0, 50) + '...';
+            document.getElementById('streak-text').textContent = 'День ' + streak;
+            window.currentDailyMessage = dailyMsg;
+        }
+
+        function initGarden() {
+            const container = document.getElementById('garden-container');
+            const bloomed = sGet('svetlana_garden', 0);
+            const flowers = ['🌸','🌺','🌻','🌷','🌹','💐','🌼','🪷','🌿','🌱','🍀','✨'];
+            container.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const flower = document.createElement('span');
+                flower.className = 'garden-flower text-xl ' + (i < bloomed ? 'bloomed' : '');
+                flower.textContent = flowers[i];
+                container.appendChild(flower);
+            }
+            document.getElementById('garden-count').textContent = bloomed + '/12 цветов';
+        }
+
+        function bloomFlower() {
+            const bloomed = sGet('svetlana_garden', 0);
+            if (bloomed < 12) { sSet('svetlana_garden', bloomed + 1); initGarden(); initAchievements(); }
+        }
+
+        function initCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            const now = new Date();
+            const year = now.getFullYear(), month = now.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+            document.getElementById('calendar-month').textContent = monthNames[month];
+            const weekDays = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+            weekDays.forEach(day => {
+                const el = document.createElement('div');
+                el.className = 'text-xs text-gray-300 font-medium';
+                el.textContent = day;
+                grid.appendChild(el);
+            });
+            const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+            for (let i = 0; i < startOffset; i++) { grid.appendChild(document.createElement('div')); }
+            const visitedDays = sGet('svetlana_visited_days', []);
+            for (let day = 1; day <= daysInMonth; day++) {
+                const el = document.createElement('div');
+                const dateStr = new Date(year, month, day).toDateString();
+                const isVisited = visitedDays.includes(dateStr);
+                const isToday = day === now.getDate();
+                el.className = 'calendar-day ' + (isVisited ? 'visited' : 'text-gray-400') + (isToday ? ' today' : '');
+                el.textContent = isVisited ? '💕' : day;
+                grid.appendChild(el);
+            }
+        }
+
+        function markTodayVisited() {
+            const visitedDays = sGet('svetlana_visited_days', []);
+            const todayStr = new Date().toDateString();
+            if (!visitedDays.includes(todayStr)) { visitedDays.push(todayStr); sSet('svetlana_visited_days', visitedDays); initCalendar(); }
+        }
+
+        function checkNightMode() {
+            const hour = new Date().getHours();
+            if (hour >= 22 || hour < 6) {
+                document.body.classList.add('night-mode');
+                document.getElementById('day-bg').classList.add('hidden');
+                document.getElementById('stars-container').classList.remove('hidden');
+                createStars();
+            }
+        }
+
+        function createStars() {
+            const container = document.getElementById('stars-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.width = (Math.random() * 3 + 1) + 'px';
+                star.style.height = star.style.width;
+                star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+                star.style.setProperty('--delay', Math.random() * 2 + 's');
+                container.appendChild(star);
+            }
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    const shooting = document.createElement('div');
+                    shooting.className = 'shooting-star';
+                    shooting.style.left = Math.random() * 50 + 'vw';
+                    shooting.style.top = Math.random() * 30 + 'vh';
+                    container.appendChild(shooting);
+                    setTimeout(() => shooting.remove(), 2000);
+                }
+            }, 5000);
+        }
+
+        function initShake() {
+            let lastX = 0, lastY = 0, lastZ = 0;
+            if (window.DeviceMotionEvent) {
+                window.addEventListener('devicemotion', (e) => {
+                    const acc = e.accelerationIncludingGravity;
+                    if (!acc) return;
+                    const delta = Math.abs(acc.x - lastX) + Math.abs(acc.y - lastY) + Math.abs(acc.z - lastZ);
+                    if (delta > 15) triggerShakeSecret();
+                    lastX = acc.x; lastY = acc.y; lastZ = acc.z;
+                });
+            }
+        }
+
+        function triggerShakeSecret() {
+            if (!document.getElementById('message-screen').classList.contains('hidden')) return;
+            if (!document.getElementById('welcome-screen').classList.contains('hidden')) return;
+            const secret = secretMessages[Math.floor(Math.random() * secretMessages.length)];
+            document.getElementById('message-emoji').textContent = '🦋';
+            document.getElementById('message-screen').classList.remove('hidden');
+            const textEl = document.getElementById('message-text');
+            textEl.textContent = ''; textEl.classList.add('typing-cursor');
+            let i = 0;
+            if (currentTyping) clearInterval(currentTyping);
+            currentTyping = setInterval(() => {
+                if (i < secret.length) { textEl.textContent += secret.charAt(i); i++; }
+                else { clearInterval(currentTyping); textEl.classList.remove('typing-cursor'); }
+            }, 40);
+            currentMessageText = secret;
+            createHeartParticles();
+            currentCategory = 'secret';
+            sSet('svetlana_secret_found', true);
+            initAchievements();
+            document.getElementById('shake-hint').style.display = 'none';
+        }
+
+        function loadStats() { totalOpens = sGet('svetlana_total_opens', 0); }
+
+        function setTheme(theme) {
+            currentTheme = theme;
+            document.querySelectorAll('.theme-dot').forEach(dot => dot.classList.remove('active'));
+            event.target.classList.add('active');
+            const body = document.body;
+            if (theme === 'lavender') body.style.background = 'linear-gradient(135deg, #F3E8FF 0%, #E0E7FF 50%, #EDE9FE 100%)';
+            else if (theme === 'peach') body.style.background = 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 50%, #FEF3C7 100%)';
+            else body.style.background = 'linear-gradient(135deg, #FFF0F5 0%, #FFE4E1 50%, #FFF8F0 100%)';
+        }
+
+        function openReply() {
+            const text = encodeURIComponent('Привет! Я только что получила твоё послание и мне стало теплее 💕');
+            window.open('https://t.me/share/url?text=' + text, '_blank');
+        }
+
+        function showMain() {
+            document.getElementById('welcome-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+            document.getElementById('main-screen').style.animation = 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+            createParticles(); markTodayVisited();
+            totalOpens++; sSet('svetlana_total_opens', totalOpens);
+            initAchievements();
+        }
+
+        function getRandomMessage(category) {
+            const msgList = messages[category], shownList = shownMessages[category];
+            if (shownList.length >= msgList.length) shownList.length = 0;
+            const available = [];
+            for (let i = 0; i < msgList.length; i++) if (!shownList.includes(i)) available.push(i);
+            const idx = available[Math.floor(Math.random() * available.length)];
+            shownList.push(idx);
+            return msgList[idx];
+        }
+
+        function showMessage(category) {
+            playSound();
+            if (window.navigator && window.navigator.vibrate) navigator.vibrate([10, 30, 10]);
+            const hour = new Date().getHours();
+            let randomMsg;
+            if ((hour >= 22 || hour < 6) && Math.random() > 0.5) randomMsg = nightMessages[Math.floor(Math.random() * nightMessages.length)];
+            else randomMsg = getRandomMessage(category);
+            if (totalOpens >= 10 && Math.random() > 0.8) randomMsg = secretMessages[Math.floor(Math.random() * secretMessages.length)];
+            document.getElementById('message-emoji').textContent = emojis[category];
+            document.getElementById('message-screen').classList.remove('hidden');
+            const textEl = document.getElementById('message-text');
+            textEl.textContent = ''; textEl.classList.add('typing-cursor');
+            let i = 0;
+            if (currentTyping) clearInterval(currentTyping);
+            currentTyping = setInterval(() => {
+                if (i < randomMsg.length) { textEl.textContent += randomMsg.charAt(i); i++; }
+                else { clearInterval(currentTyping); textEl.classList.remove('typing-cursor'); autoSpeak(randomMsg); }
+            }, 40);
+            currentMessageText = randomMsg;
+            createHeartParticles();
+            currentCategory = category;
+        }
+
+        function showDailySpecial() {
+            if (dailyShown) { showToast('Сегодняшнее послание уже открыто 💕'); return; }
+            dailyShown = true; sSet('svetlana_daily_shown', true);
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+            document.getElementById('message-emoji').textContent = '✨';
+            document.getElementById('message-screen').classList.remove('hidden');
+            const textEl = document.getElementById('message-text');
+            textEl.textContent = ''; textEl.classList.add('typing-cursor');
+            const fullMsg = dateStr + ' — ' + window.currentDailyMessage;
+            let i = 0;
+            if (currentTyping) clearInterval(currentTyping);
+            currentTyping = setInterval(() => {
+                if (i < fullMsg.length) { textEl.textContent += fullMsg.charAt(i); i++; }
+                else { clearInterval(currentTyping); textEl.classList.remove('typing-cursor'); autoSpeak(fullMsg); }
+            }, 40);
+            currentMessageText = fullMsg;
+            createHeartParticles();
+            currentCategory = 'daily';
+        }
+
+        function closeMessage() {
+            const card = document.getElementById('message-card-inner');
+            card.classList.add('closing');
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+            setTimeout(() => {
+                document.getElementById('message-screen').classList.add('hidden');
+                card.classList.remove('closing');
+                if (currentTyping) clearInterval(currentTyping);
+                if (currentCategory && currentCategory !== 'daily' && currentCategory !== 'secret') {
+                    setTimeout(() => { document.getElementById('feedback-screen').classList.remove('hidden'); }, 300);
+                }
+            }, 400);
+        }
+
+        function handleFeedback(helped) {
+            document.getElementById('feedback-screen').classList.add('hidden');
+            if (helped) {
+                currentMood = Math.min(100, currentMood + 15);
+                updateMoodMeter(); createConfetti(); bloomFlower();
+                showToast('Ты заслуживаешь счастья! 💖');
+            } else {
+                if (currentCategory && currentCategory !== 'daily' && currentCategory !== 'secret') {
+                    setTimeout(() => { showMessage(currentCategory); }, 300);
+                }
+            }
+        }
+
+        function updateMoodMeter() {
+            document.getElementById('mood-bar').style.width = currentMood + '%';
+            document.getElementById('mood-percent').textContent = currentMood + '%';
+            const emoji = document.getElementById('mood-emoji');
+            if (currentMood < 30) emoji.textContent = '😔';
+            else if (currentMood < 50) emoji.textContent = '😐';
+            else if (currentMood < 70) emoji.textContent = '🙂';
+            else if (currentMood < 90) emoji.textContent = '😊';
+            else emoji.textContent = '🥰';
+        }
+
+        function createConfetti() {
+            const colors = ['#FB7185','#F472B6','#C084FC','#FBBF24','#34D399'];
+            const shapes = ['💖','✨','🌸','💕','🎉','⭐'];
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const el = document.createElement('div');
+                    el.className = 'confetti-piece';
+                    el.textContent = shapes[Math.floor(Math.random() * shapes.length)];
+                    el.style.left = (Math.random() * 80 + 10) + 'vw';
+                    el.style.top = '50%';
+                    el.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                    el.style.color = colors[Math.floor(Math.random() * colors.length)];
+                    document.body.appendChild(el);
+                    setTimeout(() => el.remove(), 1500);
+                }, i * 50);
+            }
+        }
+
+        function captureMoment() {
+            const text = document.getElementById('message-text').textContent;
+            const emoji = document.getElementById('message-emoji').textContent;
+            const canvas = document.createElement('canvas');
+            canvas.width = 1080; canvas.height = 1080;
+            const ctx = canvas.getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 1080, 1080);
+            gradient.addColorStop(0, '#FFF0F5');
+            gradient.addColorStop(0.5, '#FFE4E1');
+            gradient.addColorStop(1, '#FFF8F0');
+            ctx.fillStyle = gradient; ctx.fillRect(0, 0, 1080, 1080);
+            ctx.fillStyle = 'rgba(251,113,133,0.1)'; ctx.beginPath(); ctx.arc(800, 200, 300, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = 'rgba(192,132,252,0.08)'; ctx.beginPath(); ctx.arc(200, 800, 250, 0, Math.PI * 2); ctx.fill();
+            ctx.font = '120px serif'; ctx.textAlign = 'center'; ctx.fillText(emoji, 540, 350);
+            ctx.font = 'bold 48px "Nunito", sans-serif'; ctx.fillStyle = '#374151'; ctx.textAlign = 'center';
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+            for (let word of words) {
+                const testLine = currentLine + word + ' ';
+                if (ctx.measureText(testLine).width > 800 && currentLine !== '') { lines.push(currentLine); currentLine = word + ' '; }
+                else currentLine = testLine;
+            }
+            lines.push(currentLine);
+            let y = 500;
+            for (let line of lines) { ctx.fillText(line.trim(), 540, y); y += 70; }
+            ctx.font = '32px "Nunito", sans-serif'; ctx.fillStyle = '#FB7185'; ctx.fillText('Для самой прекрасной Светланы 💕', 540, 950);
+            ctx.font = '24px "Nunito", sans-serif'; ctx.fillStyle = '#9CA3AF'; ctx.fillText(new Date().toLocaleDateString('ru-RU'), 540, 1000);
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = 'для_светланы_' + Date.now() + '.png'; a.click(); URL.revokeObjectURL(url);
+                showToast('Сохранено в галерею! 📸');
+            });
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toast'), toastText = document.getElementById('toast-text');
+            toastText.textContent = text; toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 2500);
+        }
+
+        function createParticles() {
+            const symbols = ['🌸','✨','💕','🌷','☁️'];
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    const el = document.createElement('div');
+                    el.className = 'heart-particle text-2xl';
+                    el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                    el.style.left = Math.random() * 100 + 'vw';
+                    el.style.bottom = '-50px';
+                    el.style.fontSize = (Math.random() * 15 + 10) + 'px';
+                    document.body.appendChild(el);
+                    setTimeout(() => el.remove(), 4000);
+                }
+            }, 2000);
+        }
+
+        function createHeartParticles() {
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const el = document.createElement('div');
+                    el.className = 'heart-particle';
+                    el.textContent = ['💖','✨','🌸','💕'][Math.floor(Math.random() * 4)];
+                    el.style.left = (Math.random() * 80 + 10) + 'vw';
+                    el.style.bottom = '20%';
+                    el.style.fontSize = '24px';
+                    document.body.appendChild(el);
+                    setTimeout(() => el.remove(), 4000);
+                }, i * 100);
+            }
+        }
+
+        function initWeather() {
+            if (!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition((pos) => {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current_weather=true')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.current_weather) return;
+                        const w = data.current_weather;
+                        const temp = Math.round(w.temperature);
+                        const code = w.weathercode;
+                        let emoji = '☀️', desc = 'Солнечно', msg = '';
+                        if (code >= 51) { emoji = '🌧️'; desc = 'Дождь'; msg = 'Светлана, за окном дождь — укутайся в плед и знай, что я рядом ☔'; }
+                        else if (code >= 71) { emoji = '❄️'; desc = 'Снег'; msg = 'Светлана, снежинки за окном напоминают мне о твоей нежности ❄️'; }
+                        else if (code >= 95) { emoji = '⛈️'; desc = 'Гроза'; msg = 'Светлана, даже в грозу ты — мой спокойный свет ⛈️'; }
+                        else if (code >= 1 && code <= 3) { emoji = '☁️'; desc = 'Облачно'; msg = 'Светлана, даже в пасмурный день ты согреваешь мир ☁️'; }
+                        else { msg = 'Светлана, сегодня солнечно — как твоя улыбка ☀️'; }
+                        document.getElementById('weather-emoji').textContent = emoji;
+                        document.getElementById('weather-temp').textContent = temp + '°C';
+                        document.getElementById('weather-desc').textContent = desc;
+                        document.getElementById('weather-message').textContent = msg;
+                        document.getElementById('weather-widget').classList.remove('hidden');
+                    })
+                    .catch(() => {});
+            }, () => {});
+        }
+
+        function initBirthday() {
+            const savedDate = sGet('svetlana_birthday', '');
+            if (!savedDate) {
+                const section = document.getElementById('birthday-section');
+                section.classList.remove('hidden');
+                section.innerHTML = '<div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-rose-400 uppercase tracking-wider">🎂 День рождения</span></div><input type="date" id="birthday-input" class="w-full px-3 py-2 rounded-xl bg-white/50 border border-rose-200 text-sm text-gray-600 focus:outline-none focus:border-rose-400 mb-2"><button onclick="saveBirthday()" class="w-full py-2 rounded-xl bg-gradient-to-r from-rose-400 to-pink-400 text-white text-sm font-bold shadow-md">Сохранить 🎂</button>';
+                return;
+            }
+            const bDate = new Date(savedDate);
+            const now = new Date();
+            const nextBday = new Date(now.getFullYear(), bDate.getMonth(), bDate.getDate());
+            if (nextBday < now) nextBday.setFullYear(now.getFullYear() + 1);
+            const diff = Math.ceil((nextBday - now) / (1000 * 60 * 60 * 24));
+            const section = document.getElementById('birthday-section');
+            section.classList.remove('hidden');
+            if (diff === 0) {
+                document.getElementById('birthday-countdown').innerHTML = '🎉 Сегодня твой день рождения! Ты — самый прекрасный подарок этому миру 💖';
+                const hMsg = holidayMessages.birthday[Math.floor(Math.random() * holidayMessages.birthday.length)];
+                setTimeout(() => { showHolidayMessage(hMsg); }, 1000);
+            } else {
+                document.getElementById('birthday-countdown').textContent = '🎂 До твоего дня рождения: ' + diff + ' ' + (diff === 1 ? 'день' : diff < 5 ? 'дня' : 'дней');
+            }
+        }
+
+        function showHolidayMessage(msg) {
+            document.getElementById('message-emoji').textContent = '🎉';
+            document.getElementById('message-screen').classList.remove('hidden');
+            const textEl = document.getElementById('message-text');
+            textEl.textContent = ''; textEl.classList.add('typing-cursor');
+            let i = 0;
+            if (currentTyping) clearInterval(currentTyping);
+            currentTyping = setInterval(() => {
+                if (i < msg.length) { textEl.textContent += msg.charAt(i); i++; }
+                else { clearInterval(currentTyping); textEl.classList.remove('typing-cursor'); autoSpeak(msg); }
+            }, 40);
+            currentMessageText = msg;
+            createHeartParticles();
+            currentCategory = 'holiday';
+        }
+
+        function saveBirthday() {
+            const val = document.getElementById('birthday-input').value;
+            if (!val) return;
+            sSet('svetlana_birthday', val);
+            showToast('День рождения сохранён! 🎂');
+            initBirthday();
+        }
+
+        function handlePhotoUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const maxSize = 400;
+                    let w = img.width, h = img.height;
+                    if (w > h) { if (w > maxSize) { h *= maxSize / w; w = maxSize; } }
+                    else { if (h > maxSize) { w *= maxSize / h; h = maxSize; } }
+                    canvas.width = w; canvas.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    sSet('svetlana_photo', dataUrl);
+                    initPhotoMemory();
+                    showToast('Фото сохранено! 📸');
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function initPhotoMemory() {
+            const photo = sGet('svetlana_photo', '');
+            if (photo) {
+                document.getElementById('photo-memory').classList.remove('hidden');
+                document.getElementById('photo-upload').classList.add('hidden');
+                document.getElementById('memory-img').src = photo;
+                document.getElementById('memory-caption').textContent = 'Наше прекрасное воспоминание 💕';
+            }
+        }
+
+        function initFutureLetter() {
+            const letters = sGet('svetlana_letters', []);
+            const now = new Date().toISOString().split('T')[0];
+            const ready = letters.filter(l => l.date <= now && !l.opened);
+            if (ready.length > 0) {
+                const letter = ready[0];
+                letter.opened = true;
+                sSet('svetlana_letters', letters);
+                document.getElementById('future-letter-display').classList.remove('hidden');
+                document.getElementById('future-letter-form').classList.add('hidden');
+                document.getElementById('future-letter-text').textContent = letter.text;
+                document.getElementById('future-letter-date').textContent = 'Послание от ' + new Date(letter.created).toLocaleDateString('ru-RU');
+            }
+        }
+
+        function saveFutureLetter() {
+            const date = document.getElementById('future-date').value;
+            const text = document.getElementById('future-text').value.trim();
+            if (!date || !text) { showToast('Заполни дату и текст 💌'); return; }
+            const letters = sGet('svetlana_letters', []);
+            letters.push({ date: date, text: text, created: new Date().toISOString(), opened: false });
+            sSet('svetlana_letters', letters);
+            document.getElementById('future-date').value = '';
+            document.getElementById('future-text').value = '';
+            showToast('Письмо сохранено! Придёт в нужный день 📬');
+        }
+
+        function initTouchParticles() {
+            document.addEventListener('touchstart', (e) => {
+                const touch = e.touches[0];
+                createTouchParticle(touch.clientX, touch.clientY);
+            }, { passive: true });
+            document.addEventListener('click', (e) => {
+                createTouchParticle(e.clientX, e.clientY);
+            });
+        }
+
+        function createTouchParticle(x, y) {
+            const el = document.createElement('div');
+            el.className = 'touch-particle';
+            el.style.left = (x - 25) + 'px';
+            el.style.top = (y - 25) + 'px';
+            el.style.width = '50px';
+            el.style.height = '50px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        document.addEventListener('touchmove', function(e) {
+            if (e.target.closest('#message-screen')) return;
+        }, { passive: true });
+    </script>
+</body>
+</html>

@@ -416,6 +416,7 @@
                     try { serverData[row.key] = JSON.parse(row.value); } catch(e) { serverData[row.key] = row.value; }
                 });
                 dataLoaded = true;
+                console.log('Supabase loaded, keys:', Object.keys(serverData));
             } catch (e) {
                 console.error('Load error:', e);
                 dataLoaded = false;
@@ -1318,6 +1319,7 @@
                     canvas.width = w; canvas.height = h;
                     ctx.drawImage(img, 0, 0, w, h);
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    localStorage.setItem('svetlana_photo_local', dataUrl);
                     sharedSet('photo', dataUrl);
                     initPhotoMemory();
                     showToast('Фото сохранено! 📸');
@@ -1338,7 +1340,11 @@
         }
 
         function initPhotoMemory() {
-            const photo = sharedGet('photo', '');
+            let photo = sharedGet('photo', '');
+            if (!photo) {
+                photo = localStorage.getItem('svetlana_photo_local') || '';
+                console.log('Photo from localStorage fallback:', photo ? 'found' : 'not found');
+            }
             if (photo) {
                 document.getElementById('photo-memory').classList.remove('hidden');
                 document.getElementById('photo-upload').classList.add('hidden');
@@ -1348,12 +1354,19 @@
         }
 
         function initFutureLetter() {
-            const letters = sharedGet('letters', []);
+            let letters = sharedGet('letters', []);
+            if (!letters || letters.length === 0) {
+                const localLetters = localStorage.getItem('svetlana_letters_local');
+                if (localLetters) {
+                    try { letters = JSON.parse(localLetters); } catch(e) {}
+                }
+            }
             const now = new Date().toISOString().split('T')[0];
             const ready = letters.filter(l => l.date <= now && !l.opened);
             if (ready.length > 0) {
                 const letter = ready[0];
                 letter.opened = true;
+                localStorage.setItem('svetlana_letters_local', JSON.stringify(letters));
                 sharedSet('letters', letters);
                 document.getElementById('future-letter-display').classList.remove('hidden');
                 document.getElementById('future-letter-form').classList.add('hidden');
@@ -1368,6 +1381,7 @@
             if (!date || !text) { showToast('Заполни дату и текст 💌'); return; }
             const letters = sharedGet('letters', []);
             letters.push({ date: date, text: text, created: new Date().toISOString(), opened: false });
+            localStorage.setItem('svetlana_letters_local', JSON.stringify(letters));
             sharedSet('letters', letters);
             document.getElementById('future-date').value = '';
             document.getElementById('future-text').value = '';

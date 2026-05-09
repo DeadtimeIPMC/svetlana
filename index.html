@@ -354,6 +354,45 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuZGpzb3RxZmhqdW96bm1jb3lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNzU2MTQsImV4cCI6MjA5Mzg1MTYxNH0.Z462flbS9BQyTSqO4YcPPZ0688T0805lEdCyoA0azO4';
         let serverData = {};
         let dataLoaded = false;
+        let deviceId = localStorage.getItem('svetlana_device_id');
+        if (!deviceId) {
+            deviceId = 'dev_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('svetlana_device_id', deviceId);
+        }
+
+        // Save deviceId to cloud registry
+        async function registerDevice() {
+            try {
+                const res = await fetch(SUPABASE_URL + '/rest/v1/app_data?key=eq.device_registry', {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                let registry = [];
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.length > 0) {
+                        try { registry = JSON.parse(data[0].value); } catch(e) {}
+                    }
+                }
+                if (!registry.includes(deviceId)) {
+                    registry.push(deviceId);
+                    await fetch(SUPABASE_URL + '/rest/v1/app_data', {
+                        method: 'POST',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': 'Bearer ' + SUPABASE_KEY,
+                            'Content-Type': 'application/json',
+                            'Prefer': 'resolution=merge-duplicates'
+                        },
+                        body: JSON.stringify({ key: 'device_registry', value: JSON.stringify(registry), updated_at: new Date().toISOString() })
+                    });
+                }
+            } catch (e) {}
+        }
 
         async function serverLoad() {
             try {
@@ -398,17 +437,36 @@
             }
         }
 
+        // Personal data (per device)
         function sGet(key, def) {
             if (!dataLoaded) return def;
-            const val = serverData[key];
+            const fullKey = deviceId + '_' + key;
+            const val = serverData[fullKey];
             if (val === undefined || val === null) return def;
             return val;
         }
 
         function sSet(key, val) {
             if (!dataLoaded) return;
-            serverData[key] = val;
-            serverSave(key, val);
+            const fullKey = deviceId + '_' + key;
+            serverData[fullKey] = val;
+            serverSave(fullKey, val);
+        }
+
+        // Shared data (photo + letters)
+        function sharedGet(key, def) {
+            if (!dataLoaded) return def;
+            const fullKey = 'shared_' + key;
+            const val = serverData[fullKey];
+            if (val === undefined || val === null) return def;
+            return val;
+        }
+
+        function sharedSet(key, val) {
+            if (!dataLoaded) return;
+            const fullKey = 'shared_' + key;
+            serverData[fullKey] = val;
+            serverSave(fullKey, val);
         }
 
         const messages = {
@@ -623,6 +681,7 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             await serverLoad();
+            await registerDevice();
             initDailyMessage(); initGarden(); initCalendar(); checkNightMode(); initShake(); loadStats();
             initAchievements(); initQuote(); initWeather(); initBirthday(); initPhotoMemory(); initFutureLetter(); initTouchParticles();
             initHoliday(); updateTimeGreeting(); initTilt();
@@ -949,7 +1008,10 @@
             document.getElementById('shake-hint').style.display = 'none';
         }
 
-        function loadStats() { totalOpens = sGet('svetlana_total_opens', 0); }
+        function loadStats() { 
+            totalOpens = sGet('svetlana_total_opens', 0); 
+            currentMood = sGet('mood', 50);
+        }
 
         function setTheme(theme) {
             currentTheme = theme;
@@ -1059,6 +1121,7 @@
         function updateMoodMeter() {
             document.getElementById('mood-bar').style.width = currentMood + '%';
             document.getElementById('mood-percent').textContent = currentMood + '%';
+            sSet('mood', currentMood);
             const emoji = document.getElementById('mood-emoji');
             if (currentMood < 30) emoji.textContent = '😔';
             else if (currentMood < 50) emoji.textContent = '😐';
@@ -1250,7 +1313,7 @@
                     canvas.width = w; canvas.height = h;
                     ctx.drawImage(img, 0, 0, w, h);
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    sSet('svetlana_photo', dataUrl);
+                    sharedSet('photo', dataUrl);
                     initPhotoMemory();
                     showToast('Фото сохранено! 📸');
                 };
@@ -1260,7 +1323,7 @@
         }
 
         function initPhotoMemory() {
-            const photo = sGet('svetlana_photo', '');
+            const photo = sharedGet('photo', '');
             if (photo) {
                 document.getElementById('photo-memory').classList.remove('hidden');
                 document.getElementById('photo-upload').classList.add('hidden');
@@ -1270,13 +1333,13 @@
         }
 
         function initFutureLetter() {
-            const letters = sGet('svetlana_letters', []);
+            const letters = sharedGet('letters', []);
             const now = new Date().toISOString().split('T')[0];
             const ready = letters.filter(l => l.date <= now && !l.opened);
             if (ready.length > 0) {
                 const letter = ready[0];
                 letter.opened = true;
-                sSet('svetlana_letters', letters);
+                sharedSet('letters', letters);
                 document.getElementById('future-letter-display').classList.remove('hidden');
                 document.getElementById('future-letter-form').classList.add('hidden');
                 document.getElementById('future-letter-text').textContent = letter.text;
@@ -1288,9 +1351,9 @@
             const date = document.getElementById('future-date').value;
             const text = document.getElementById('future-text').value.trim();
             if (!date || !text) { showToast('Заполни дату и текст 💌'); return; }
-            const letters = sGet('svetlana_letters', []);
+            const letters = sharedGet('letters', []);
             letters.push({ date: date, text: text, created: new Date().toISOString(), opened: false });
-            sSet('svetlana_letters', letters);
+            sharedSet('letters', letters);
             document.getElementById('future-date').value = '';
             document.getElementById('future-text').value = '';
             showToast('Письмо сохранено! Придёт в нужный день 📬');

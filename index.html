@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#FFF0F5">
     <title>Для Светланы 💖</title>
     <script src="https://cdn.tailwindcss.com"></script>
-        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
         body { font-family: 'Nunito', sans-serif; background: linear-gradient(135deg, #FFF0F5 0%, #FFE4E1 50%, #FFF8F0 100%); min-height: 100vh; overflow-x: hidden; -webkit-font-smoothing: antialiased; overscroll-behavior-y: none; }
@@ -350,6 +350,404 @@
 
     <script>
 
+        const SUPABASE_URL = 'https://xndjsotqfhjuoznmcoyr.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuZGpzb3RxZmhqdW96bm1jb3lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNzU2MTQsImV4cCI6MjA5Mzg1MTYxNH0.Z462flbS9BQyTSqO4YcPPZ0688T0805lEdCyoA0azO4';
+        let serverData = {};
+        let dataLoaded = false;
+
+        async function serverLoad() {
+            try {
+                const res = await fetch(SUPABASE_URL + '/rest/v1/app_data?select=*', {
+                    method: 'GET',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_KEY,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const data = await res.json();
+                serverData = {};
+                data.forEach(row => {
+                    try { serverData[row.key] = JSON.parse(row.value); } catch(e) { serverData[row.key] = row.value; }
+                });
+                dataLoaded = true;
+            } catch (e) {
+                console.error('Load error:', e);
+                dataLoaded = false;
+            }
+        }
+
+        async function serverSave(key, value) {
+            if (!dataLoaded) return;
+            try {
+                const jsonValue = JSON.stringify(value);
+                const res = await fetch(SUPABASE_URL + '/rest/v1/app_data', {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_KEY,
+                        'Authorization': 'Bearer ' + SUPABASE_KEY,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'resolution=merge-duplicates'
+                    },
+                    body: JSON.stringify({ key: key, value: jsonValue, updated_at: new Date().toISOString() })
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+            } catch (e) {
+                console.error('Save error:', e);
+            }
+        }
+
+        function sGet(key, def) {
+            if (!dataLoaded) return def;
+            const val = serverData[key];
+            if (val === undefined || val === null) return def;
+            return val;
+        }
+
+        function sSet(key, val) {
+            if (!dataLoaded) return;
+            serverData[key] = val;
+            serverSave(key, val);
+        }
+
+        const messages = {
+            sad: [
+                "Светлана, даже когда тебе грустно — ты всё равно прекрасна 🌸",
+                "Плакать — это нормально. Ты человек, и твои чувства важны 💕",
+                "Это чувство пройдёт, а ты останешься сильной и невероятной ✨",
+                "Ты заслуживаешь только любви, заботы и счастья 💖",
+                "После дождя всегда выходит солнце, и ты — моё солнце ☀️",
+                "Обнимаю тебя крепко-крепко, даже на расстоянии 🤗",
+                "Грусть — это просто доказательство того, что ты живёшь искренне 💗",
+                "Твои слёзы не делают тебя слабой, они делают тебя честной 🌷",
+                "Я рядом, даже когда молчу. Всегда рядом 💝",
+                "Ты переживёшь это, как переживала всё остальное — с достоинством ✨",
+                "Позволь себе быть уязвимой. Это тоже сила 💪",
+                "Мир станет ярче, потому что ты — его свет 🌟"
+            ],
+            miss: [
+                "Я тоже скучаю по тебе, мой лучик Света 🌸",
+                "Каждая секунда без тебя кажется вечностью 💕",
+                "Ты в моих мыслях каждый день и каждую ночь ✨",
+                "Скоро увидимся, а пока — посылаю тебе тепло 🤗",
+                "Ты — самое прекрасное, что случалось со мной 💖",
+                "Мир кажется ярче, когда ты рядом 🌷",
+                "Я считаю минуты до нашей встречи ⏰",
+                "Твой голос — моя любимая мелодия 🎵",
+                "Даже фотографии с тобой заставляют улыбаться 📸",
+                "Ты наполняешь мою жизнь смыслом 💫",
+                "Каждый день без тебя — это день, которого не было 🥺",
+                "Ты — мой самый приятный повод скучать 💌"
+            ],
+            lonely: [
+                "Ты никогда не одна. Я всегда рядом мысленно 🤗",
+                "Даже в тишине — помни, что кто-то думает о тебе с любовью 💕",
+                "Ты словно тёплый лучик света в этом мире ✨",
+                "Одиночество — это временно. Ты — навсегда прекрасна 🌸",
+                "Я с тобой, даже когда молчу. Всегда 💖",
+                "Ты окружена любовью, просто иногда её не видно ☀️",
+                "Твоя душа слишком прекрасна, чтобы быть одной 💗",
+                "Позвони тому, кто тебя любит. Они ждут 🌙",
+                "Ты заслуживаешь компании, которая согревает душу 🕯️",
+                "Даже звёзды светят в одиночестве, но всё равно светят ✨",
+                "Твоя компания — лучшая, что я знаю, но я понимаю, как тебе сейчас 🫂",
+                "Одиночество уходит, когда мы вспоминаем, что нас любят 💝"
+            ],
+            support: [
+                "Ты справишься. Ты уже справлялась с большим 💪",
+                "Верь в себя так, как я верю в тебя — безгранично ✨",
+                "Ты сильнее, чем думаешь, и мягче, чем кажется 🌸",
+                "Каждый шаг — это победа, даже маленький. Горжусь тобой 💕",
+                "Ты не обязана быть идеальной. Ты и так чудесна 💖",
+                "Отдохни, если нужно. Ты заслуживаешь покоя ☁️",
+                "Твоя борьба — это доказательство твоей смелости 🦋",
+                "Дыши. Просто дыши. Всё наладится 🌿",
+                "Ты не должна нести всё одна. Делись бременем 🤝",
+                "Твои старания видны, даже если результаты ещё не пришли 🌱",
+                "Ты — пример того, как можно быть хрупкой и сильной одновременно 💗",
+                "Продолжай. Я верю в тебя больше, чем в что-либо другое ⭐"
+            ],
+            cute: [
+                "Светлана, ты невероятно красивая и нежная 💖",
+                "Твоя улыбка делает мир лучше ☀️",
+                "Ты очень особенная девушка 🌷",
+                "Твои глаза — словно звёзды в тёмном небе ✨",
+                "Ты делаешь обычные моменты волшебными 💕",
+                "Ты — самое милое создание на свете 🌸",
+                "Когда ты смеёшься — сердце замирает от счастья 💝",
+                "Ты как утренний свет: мягкая, тёплая и необходимая ☀️",
+                "Твоя нежность — это дар, которым ты делишься с миром 🎁",
+                "Ты прекрасна в своей искренности и открытости 🦋",
+                "Твой смех — мой любимый звук в мире 🎶",
+                "Ты — тот редкий человек, который делает жизнь слаще 🍯"
+            ]
+        };
+
+        const secretMessages = [
+            "Ты уже столько раз открывала это приложение — значит, я столько раз думал о тебе 💭",
+            "Это секретное послание только для тебя. Ты — моя самая любимая привычка 💕",
+            "Я чувствую твою улыбку даже через экран. Продолжай сиять ✨",
+            "Ты не просто открываешь приложение — ты открываешь моё сердце каждый раз 💖",
+            "Между нами тысячи километров, но когда ты здесь — я рядом 🌙",
+            "Ты — единственный человек, ради которого я написал целое приложение 💌",
+            "Каждое твоё нажатие — это пульс моей заботы о тебе 💗",
+            "Я знаю, что ты сейчас читаешь это. И я улыбаюсь ☺️",
+            "Ты — мой самый красивый баг в этой жизни. И я не хочу его чинить 🦋",
+            "Если бы любовь можно было измерить, твоя была бы бесконечностью плюс один 💫"
+        ];
+
+        const dailyMessages = [
+            "Сегодняшний день создан для тебя, Светлана. Сияй! ✨",
+            "Пусть этот день принесёт тебе столько же радости, сколько ты приносишь другим 💕",
+            "Светлана, помни: ты достойна всего самого лучшего. Каждый день 🌸",
+            "Сегодня мир должен знать, какая ты прекрасная. Покажи им! 💖",
+            "Ты — причина, по которой кто-то сегодня улыбнётся. Включая меня ☀️",
+            "Пусть сегодняшнее солнце напомнит тебе о твоём внутреннем свете 🌟",
+            "Светлана, этот день — ещё одна возможность быть счастливой. Лови её! 🦋",
+            "Ты сильнее, чем вчера. И это прекрасно 💪",
+            "Сегодня — идеальный день, чтобы быть собой. А ты — идеальна 💝",
+            "Пусть сегодня всё сложится так, как ты мечтаешь 🌙",
+            "Светлана, этот мир лучше, потому что в нём есть ты. Каждый день 💗",
+            "Сегодня я благодарен за то, что ты есть. Спасибо, что ты 💌",
+            "Пусть сегодняшний ветер принесёт тебе только хорошие новости 🍃",
+            "Ты — моё утро, мой день и моя ночь. Сегодня и всегда 🌅",
+            "Светлана, не забывай: ты вдохновляешь. Даже не пытаясь ✨",
+            "Сегодня пусть всё будет легко, тепло и по-доброму ☁️",
+            "Ты — магия, которая случается каждый день. Не забывай об этом 🪄",
+            "Пусть сегодня ты получишь столько объятий, сколько захочешь 🤗",
+            "Светлана, этот день — твой. Забирай всё лучшее! 💫",
+            "Ты делаешь обычные дни незабываемыми. Спасибо 💕",
+            "Сегодня пусть твоя душа поёт от счастья 🎵",
+            "Ты — ответ на вопрос, почему этот мир прекрасен 🌷",
+            "Пусть сегодняшний вечер будет таким же уютным, как ты 🕯️",
+            "Светлана, помни: ты любима. Сегодня, завтра, всегда 💖",
+            "Сегодня — ещё один день, чтобы восхищаться тобой ✨",
+            "Ты — моё любимое чудо. Каждый день заново 🌟",
+            "Пусть сегодня всё будет в твоё удовольствие 🎀",
+            "Светлана, ты — причина, по которой я верю в добро 💝",
+            "Сегодня пусть удача улыбнётся тебе так же, как ты улыбаешься миру ☺️",
+            "Ты — мой самый красивый день. Каждый раз, когда я о тебе думаю 💌",
+            "Пусть сегодняшний день подарит тебе тысячу поводов для радости 🎉"
+        ];
+
+        const nightMessages = [
+            "Спокойной ночи, Светлана. Пусть тебе приснятся только сладкие сны 🌙",
+            "Закрывай глаза, моя звёздочка. Я охраняю твой сон 💫",
+            "В этой тишине я шепчу тебе: ты любима. Спи спокойно 💕",
+            "Пусть луна следит за тобой, а я — за луной. Доброй ночи 🌙",
+            "Светлана, отпусти все тревоги. Завтра будет новый прекрасный день ✨",
+            "Ты — моя последняя мысль перед сном и первая — при пробуждении 💖",
+            "Пусть звёзды напоют тебя колыбельной. Спи, моя красавица 🌟",
+            "Я посылаю тебе тёплое одеяло из облаков. Укутывайся и засыпай ☁️",
+            "В мире есть миллионы звёзд, но самая яркая — ты. Спокойной ночи 💫",
+            "Пусть твои сны будут такими же прекрасными, как ты сама 🌸",
+            "Светлана, отдыхай. Ты заслужила самый мягкий сон 🛏️",
+            "Я обнимаю тебя через расстояние. Чувствуешь? Спи крепко 🤗"
+        ];
+
+        const holidayMessages = {
+            valentine: [
+                "С Днём святого Валентина, Светлана! Ты — моё самое прекрасное чувство 💘",
+                "14 февраля — просто повод сказать то, что я чувствую каждый день: ты любима 💕",
+                "Светлана, ты — мой Валентин не только сегодня, но и всегда 💝",
+                "Любовь — это ты. С праздником, моё солнышко 🌹"
+            ],
+            womensDay: [
+                "С 8 Марта, Светлана! Ты делаешь этот мир прекраснее просто своим присутствием 🌷",
+                "Весна приходит, потому что знает — тебе пора сиять. С праздником! 💐",
+                "Светлана, ты достойна всего самого лучшего. Сегодня и всегда 💖",
+                "Ты — причина, по которой я верю в чудеса. С 8 Марта! ✨"
+            ],
+            newYear: [
+                "С Новым годом, Светлана! Пусть этот год подарит тебе всё, о чём ты мечтаешь 🎄",
+                "Новый год — новая глава, и я хочу быть в ней с тобой. С праздником! 🎉",
+                "Светлана, пусть сбываются все твои желания. Ты этого заслуживаешь ⭐",
+                "Волшебство начинается с тебя. С Новым годом, моя звёздочка ✨"
+            ],
+            birthday: [
+                "С днём рождения, Светлана! Ты — лучший подарок этому миру 🎂",
+                "В этот особенный день хочу сказать: ты невероятна. С днём рождения! 🎉",
+                "Светлана, пусть каждый твой день будет таким же прекрасным, как ты 💖",
+                "Сегодня празднует весь мир, потому что родилась ты. С днём рождения! 🎈"
+            ]
+        };
+
+        const quotes = [
+            "«Любовь — это когда счастье другого человека важнее твоего»",
+            "«Свет не ищет признания, он просто светит»",
+            "«Ты не можешь контролировать ветер, но можешь направить паруса»",
+            "«Каждый день — это новая глава твоей истории»",
+            "«Ты сильнее, чем думаешь, и любима больше, чем знаешь»",
+            "«Самые красивые вещи в жизни нельзя купить — их можно только почувствовать»",
+            "«Ты — художник своей жизни. Не давай другим держать кисть»",
+            "«Улыбка — это универсальный язык доброты»",
+            "«Ты не обязана быть идеальной, чтобы быть достойной любви»",
+            "«Маленькие шаги тоже ведут к большим мечтам»",
+            "«Твоя энергия привлекает то, что ты излучаешь»",
+            "«Будь маяком в чьём-то шторме»",
+            "«Ты — единственная копия в этом мире. Цени это»",
+            "«Счастье — это путь, а не пункт назначения»",
+            "«Твоя улыбка — лучшее украшение этого дня»",
+            "«Не сравнивай свою главу 1 с чужой главой 20»",
+            "«Ты заслуживаешь того, что заставляет тебя чувствовать себя живой»",
+            "«Лучший способ предсказать будущее — создать его»",
+            "«Ты — магия, которую этот мир так нуждался»",
+            "«Дыши. Это всего лишь плохой день, не плохая жизнь»",
+            "«Твоя доброта — это твоя суперсила»",
+            "«Верь в чудеса, но не забывай быть чудом для других»",
+            "«Ты — достаточно. Ты всегда была достаточно»",
+            "«Свет внутри тебя ярче любой тьмы снаружи»",
+            "«Жизнь слишком коротка, чтобы быть чем-то другим, кроме счастливой»",
+            "«Ты — причина, по которой кто-то верит в доброту»",
+            "«Не забывай: ты пережила 100% своих плохих дней»",
+            "«Твоя история ещё пишется. Не суди её по одной странице»",
+            "«Будь тем человеком, которым хотел бы встретиться в трудный день»",
+            "«Ты — шедевр в процессе создания»",
+            "«Каждый закат — это напоминание, что завтра будет новый рассвет»"
+        ];
+
+        const achievements = [
+            { id: 'first_visit', icon: '🌱', name: 'Первый шаг', desc: 'Открыть приложение впервые', condition: () => totalOpens >= 1 },
+            { id: 'streak_3', icon: '🔥', name: 'Начало привычки', desc: '3 дня подряд', condition: () => sGet('svetlana_streak', 0) >= 3 },
+            { id: 'streak_7', icon: '⭐', name: 'Неделя заботы', desc: '7 дней подряд', condition: () => sGet('svetlana_streak', 0) >= 7 },
+            { id: 'garden_full', icon: '🌸', name: 'Цветущий сад', desc: 'Вырастить все 12 цветов', condition: () => sGet('svetlana_garden', 0) >= 12 },
+            { id: 'mood_100', icon: '💖', name: 'Счастливая Светлана', desc: 'Достичь 100% настроения', condition: () => currentMood >= 100 },
+            { id: 'secret_found', icon: '🦋', name: 'Секретный агент', desc: 'Найти секретное сообщение', condition: () => sGet('svetlana_secret_found', false) }
+        ];
+
+        const emojis = { sad: "🤗", miss: "💌", lonely: "🌙", support: "💪", cute: "💖" };
+        const shownMessages = { sad: [], miss: [], lonely: [], support: [], cute: [] };
+        let currentTyping = null, currentMood = 50, currentCategory = null, dailyShown = false, totalOpens = 0, currentTheme = 'rose';
+        let soundEnabled = true, speakEnabled = false, audioCtx = null, currentMessageText = '';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await serverLoad();
+            initDailyMessage(); initGarden(); initCalendar(); checkNightMode(); initShake(); loadStats();
+            initAchievements(); initQuote(); initWeather(); initBirthday(); initPhotoMemory(); initFutureLetter(); initTouchParticles();
+            initHoliday(); updateTimeGreeting(); initTilt();
+        });
+
+        function updateTimeGreeting() {
+            const hour = new Date().getHours();
+            let greeting = 'Привет, Светлана';
+            if (hour >= 5 && hour < 12) greeting = 'Доброе утро, солнышко ☀️';
+            else if (hour >= 12 && hour < 17) greeting = 'Привет, моя хорошая 💕';
+            else if (hour >= 17 && hour < 22) greeting = 'Добрый вечер, звёздочка ✨';
+            else greeting = 'Ты ещё не спишь, моя хорошая? 🌙';
+            document.getElementById('greeting-text').textContent = greeting;
+        }
+
+        function initHoliday() {
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            const bday = sGet('svetlana_birthday', '');
+            let holidayType = null;
+            let items = [];
+            let duration = 5000;
+
+            if (month === 2 && day === 14) { holidayType = 'valentine'; items = ['💘','💖','💕','🌹','❤️']; }
+            else if (month === 3 && day === 8) { holidayType = 'womensDay'; items = ['🌷','💐','🌸','💖','✨']; }
+            else if ((month === 12 && day === 31) || (month === 1 && day === 1)) { holidayType = 'newYear'; items = ['❄️','🎄','⭐','✨','🎉']; }
+            else if (bday) {
+                const bDate = new Date(bday);
+                if (month === bDate.getMonth() + 1 && day === bDate.getDate()) { holidayType = 'birthday'; items = ['🎂','🎈','🎉','💖','✨']; }
+            }
+
+            if (holidayType) {
+                document.getElementById('holiday-container').classList.remove('hidden');
+                startHolidayFall(items, duration);
+                if (holidayType === 'valentine') document.body.style.background = 'linear-gradient(135deg, #FFE4E1 0%, #FFB6C1 50%, #FFC0CB 100%)';
+                else if (holidayType === 'womensDay') document.body.style.background = 'linear-gradient(135deg, #FFF0F5 0%, #E6E6FA 50%, #F0FFF0 100%)';
+                else if (holidayType === 'newYear') document.body.style.background = 'linear-gradient(135deg, #E0F7FA 0%, #B3E5FC 50%, #E1F5FE 100%)';
+                else if (holidayType === 'birthday') document.body.style.background = 'linear-gradient(135deg, #FFF8E1 0%, #FFECB3 50%, #FFE0B2 100%)';
+            }
+        }
+
+        function startHolidayFall(items, duration) {
+            const container = document.getElementById('holiday-container');
+            const interval = setInterval(() => {
+                const el = document.createElement('div');
+                el.className = 'holiday-item';
+                el.textContent = items[Math.floor(Math.random() * items.length)];
+                el.style.left = Math.random() * 100 + 'vw';
+                el.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                el.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                container.appendChild(el);
+                setTimeout(() => el.remove(), 7000);
+            }, 800);
+            setTimeout(() => clearInterval(interval), duration);
+        }
+
+        function initTilt() {
+            if (!window.DeviceOrientationEvent) return;
+            const container = document.getElementById('main-screen');
+            if (!container) return;
+            window.addEventListener('deviceorientation', (e) => {
+                const beta = Math.min(Math.max(e.beta, -30), 30);
+                const gamma = Math.min(Math.max(e.gamma, -30), 30);
+                const rotateX = beta * -0.3;
+                const rotateY = gamma * 0.3;
+                const cards = container.querySelectorAll('.glass-card, .glass');
+                cards.forEach((card, i) => {
+                    const depth = (i % 3 + 1) * 5;
+                    card.style.transform = 'perspective(1000px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateZ(' + depth + 'px)';
+                });
+            });
+        }
+
+        function toggleSpeak() {
+            speakEnabled = !speakEnabled;
+            const btn = document.getElementById('speak-btn');
+            btn.classList.toggle('active', speakEnabled);
+            showToast(speakEnabled ? 'Озвучка включена 🗣️' : 'Озвучка выключена');
+        }
+
+        function speakCurrentMessage() {
+            if (!currentMessageText || !window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(currentMessageText);
+            utter.lang = 'ru-RU';
+            utter.rate = 0.9;
+            utter.pitch = 1.1;
+            const voices = window.speechSynthesis.getVoices();
+            const ruVoice = voices.find(v => v.lang.includes('ru'));
+            if (ruVoice) utter.voice = ruVoice;
+            window.speechSynthesis.speak(utter);
+        }
+
+        function autoSpeak(text) {
+            if (!speakEnabled || !window.speechSynthesis) return;
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'ru-RU';
+            utter.rate = 0.9;
+            utter.pitch = 1.1;
+            const voices = window.speechSynthesis.getVoices();
+            const ruVoice = voices.find(v => v.lang.includes('ru'));
+            if (ruVoice) utter.voice = ruVoice;
+            window.speechSynthesis.speak(utter);
+        }
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playSound() {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                osc.start(audioCtx.currentTime);
                 osc.stop(audioCtx.currentTime + 0.3);
             } catch(e) {}
         }

@@ -15,16 +15,14 @@
         body.night-mode { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); }
         .glass { background: rgba(255,255,255,0.65); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5); }
         body.night-mode .glass { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); }
-        .glass-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 8px 32px rgba(255,182,193,0.15), inset 0 1px 0 rgba(255,255,255,0.6); transition: transform 0.1s ease-out; transform-style: preserve-3d; }
+        .glass-card { background: rgba(255,255,255,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.6); box-shadow: 0 8px 32px rgba(255,182,193,0.15), inset 0 1px 0 rgba(255,255,255,0.6); transition: transform 0.1s ease-out; }
         body.night-mode .glass-card { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1); }
         body.night-mode .glass-card h3, body.night-mode .glass-card p { color: rgba(255,255,255,0.9); }
         body.night-mode .text-gray-700 { color: rgba(255,255,255,0.9) !important; }
         body.night-mode .text-gray-400 { color: rgba(255,255,255,0.5) !important; }
         body.night-mode .text-gray-600 { color: rgba(255,255,255,0.7) !important; }
-        .btn-mood { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative; overflow: hidden; transform-style: preserve-3d; }
+        .btn-mood { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative; overflow: hidden; }
         .btn-mood:active { transform: scale(0.95); }
-        .btn-mood::after { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255,255,255,0.4); transform: translate(-50%,-50%); transition: width 0.6s, height 0.6s; }
-        .btn-mood:active::after { width: 300px; height: 300px; }
         .heart-particle { position: fixed; pointer-events: none; animation: floatUp 4s ease-out forwards; opacity: 0; z-index: 5; }
         @keyframes floatUp { 0% { opacity: 0; transform: translateY(0) scale(0) rotate(0deg); } 20% { opacity: 0.8; transform: translateY(-20px) scale(1) rotate(10deg); } 100% { opacity: 0; transform: translateY(-300px) scale(0.5) rotate(360deg); } }
         .message-card { animation: scaleIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
@@ -91,14 +89,11 @@
         .holiday-bg { position: fixed; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none; z-index: 1; overflow: hidden; }
         .holiday-item { position: fixed; pointer-events: none; animation: holidayFall linear forwards; }
         @keyframes holidayFall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 1; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
-        .tilt-container { transform-style: preserve-3d; perspective: 1000px; }
         .speak-btn { transition: all 0.2s ease; }
         .speak-btn.active { background: linear-gradient(135deg, #FB7185, #F472B6); color: white; }
-        .sync-indicator { position: fixed; bottom: 10px; right: 10px; z-index: 100; font-size: 10px; opacity: 0.5; }
         .online-indicator { width: 8px; height: 8px; border-radius: 50%; background: #34D399; box-shadow: 0 0 8px #34D399; animation: pulse-green 2s infinite; }
         .offline-indicator { width: 8px; height: 8px; border-radius: 50%; background: #FB7185; }
         @keyframes pulse-green { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .connection-status { transition: all 0.3s ease; }
         .live-users { display: flex; align-items: center; gap: 4px; }
         .live-users-avatars { display: flex; }
         .live-users-avatars .avatar { width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; margin-left: -8px; background: linear-gradient(135deg, #FB7185, #F472B6); display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; font-weight: bold; }
@@ -106,8 +101,6 @@
         .live-badge { background: linear-gradient(135deg, #FB7185, #F472B6); color: white; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
         .toast-progress { position: absolute; bottom: 0; left: 0; height: 3px; background: linear-gradient(90deg, #FB7185, #F472B6); border-radius: 0 0 12px 12px; animation: toast-timer 2.5s linear forwards; }
         @keyframes toast-timer { 0% { width: 100%; } 100% { width: 0%; } }
-        .ripple { position: absolute; border-radius: 50%; transform: scale(0); animation: ripple-effect 0.6s linear; background: rgba(255,255,255,0.3); }
-        @keyframes ripple-effect { to { transform: scale(4); opacity: 0; } }
     </style>
 <base target="_blank">
 </head>
@@ -122,7 +115,6 @@
         <div class="bg-shape bg-purple-100 w-40 h-40 bottom-40 right-20" style="animation-delay:1s"></div>
     </div>
 
-    <!-- Connection Status Bar -->
     <div id="connection-bar" class="fixed top-0 left-0 right-0 z-[90] px-4 py-2 flex items-center justify-between glass hidden" style="padding-top: max(env(safe-area-inset-top), 8px);">
         <div class="flex items-center gap-2">
             <div id="connection-dot" class="online-indicator"></div>
@@ -171,8 +163,7 @@
             </div>
         </div>
 
-        <div id="main-screen" class="hidden flex-1 flex flex-col px-5 pt-6 pb-6 tilt-container">
-            <!-- Sync Status -->
+        <div id="main-screen" class="hidden flex-1 flex flex-col px-5 pt-6 pb-6">
             <div id="sync-status" class="mb-2 flex items-center justify-center gap-2 text-xs text-rose-400 opacity-0 transition-opacity duration-300">
                 <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                 <span>Синхронизация...</span>
@@ -399,69 +390,88 @@
 
     <script>
         // ============================================
-        // SUPABASE CONFIGURATION
+        // CONFIGURATION
         // ============================================
         const SUPABASE_URL = 'https://xndjsotqfhjuoznmcoyr.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuZGpzb3RxZmhqdW96bm1jb3lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNzU2MTQsImV4cCI6MjA5Mzg1MTYxNH0.Z462flbS9BQyTSqO4YcPPZ0688T0805lEdCyoA0azO4';
-
-        // Единый shared ключ для всех пользователей по ссылке
         const SHARED_APP_KEY = 'svetlana_shared_app_v2';
 
         // ============================================
-        // STATE MANAGEMENT (Singleton Pattern)
+        // GLOBAL STATE (carefully managed)
         // ============================================
-        const AppState = {
-            data: null,
-            lastSync: null,
-            isOnline: navigator.onLine,
-            isSyncing: false,
-            realtimeChannel: null,
-            currentUserId: null,
-            liveUsers: new Set(),
-
-            getDefaultState() {
-                return {
-                    version: 2,
-                    updated_at: new Date().toISOString(),
-                    mood: 50,
-                    streak: 1,
-                    last_visit: new Date().toDateString(),
-                    daily_shown: false,
-                    garden: 0,
-                    visited_days: [],
-                    achievements: [],
-                    secret_found: false,
-                    total_opens: 0,
-                    birthday: '',
-                    photo_url: '',
-                    photo_data: '',
-                    letters: [],
-                    shown_messages: { sad: [], miss: [], lonely: [], support: [], cute: [] },
-                    theme: 'rose'
-                };
-            }
-        };
+        let appState = null;
+        let stateLoaded = false;
+        let syncInProgress = false;
+        let realtimeWS = null;
+        let particlesInterval = null;
+        let currentMood = 50;
+        let currentTyping = null;
+        let currentCategory = null;
+        let dailyShown = false;
+        let soundEnabled = true;
+        let speakEnabled = false;
+        let audioCtx = null;
+        let currentMessageText = '';
+        let shownMessages = { sad: [], miss: [], lonely: [], support: [], cute: [] };
 
         // ============================================
-        // NETWORK LAYER with Retry Logic
+        // DEFAULT STATE
         // ============================================
-        async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 10000);
-                    const response = await fetch(url, { ...options, signal: controller.signal });
-                    clearTimeout(timeoutId);
+        function getDefaultState() {
+            return {
+                version: 2,
+                updated_at: new Date().toISOString(),
+                mood: 50,
+                streak: 1,
+                last_visit: new Date().toDateString(),
+                daily_shown: false,
+                garden: 0,
+                visited_days: [],
+                achievements: [],
+                secret_found: false,
+                total_opens: 0,
+                birthday: '',
+                photo_data: '',
+                letters: [],
+                shown_messages: { sad: [], miss: [], lonely: [], support: [], cute: [] },
+                theme: 'rose'
+            };
+        }
 
-                    if (!response.ok) {
-                        const error = await response.text();
-                        throw new Error(`HTTP ${response.status}: ${error}`);
-                    }
-                    return response;
-                } catch (err) {
-                    if (i === retries - 1) throw err;
-                    await new Promise(r => setTimeout(r, delay * (i + 1)));
+        // ============================================
+        // NETWORK UTILITIES
+        // ============================================
+        async function apiRequest(path, method, body) {
+            const url = SUPABASE_URL + '/rest/v1' + path;
+            const options = {
+                method: method,
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_KEY,
+                    'Content-Type': 'application/json'
                 }
+            };
+            if (body) {
+                options.body = JSON.stringify(body);
+                if (method === 'POST') {
+                    options.headers['Prefer'] = 'resolution=merge-duplicates';
+                }
+            }
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            options.signal = controller.signal;
+
+            try {
+                const response = await fetch(url, options);
+                clearTimeout(timeoutId);
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+                return response;
+            } catch (err) {
+                clearTimeout(timeoutId);
+                throw err;
             }
         }
 
@@ -471,11 +481,9 @@
         }
 
         function updateConnectionStatus(online) {
-            AppState.isOnline = online;
             const bar = document.getElementById('connection-bar');
             const dot = document.getElementById('connection-dot');
             const text = document.getElementById('connection-text');
-
             if (!bar || !dot || !text) return;
 
             if (!online) {
@@ -485,295 +493,306 @@
                 text.className = 'text-xs font-semibold text-rose-400';
             } else {
                 bar.classList.add('hidden');
-                dot.className = 'online-indicator';
-                text.textContent = 'Онлайн';
-                text.className = 'text-xs font-semibold text-gray-600';
             }
         }
 
         // ============================================
-        // SUPABASE CORE OPERATIONS (Primary Source)
+        // STATE PERSISTENCE (Supabase Primary)
         // ============================================
-        async function loadFromSupabase() {
-            if (!AppState.isOnline) {
-                const cached = localStorage.getItem('sv_app_cache');
-                if (cached) return JSON.parse(cached);
-                return AppState.getDefaultState();
+        async function loadState() {
+            if (!navigator.onLine) {
+                const cached = localStorage.getItem('sv_cache');
+                return cached ? JSON.parse(cached) : getDefaultState();
             }
 
             showSyncStatus(true);
             try {
-                const response = await fetchWithRetry(
-                    `${SUPABASE_URL}/rest/v1/app_data?key=eq.${SHARED_APP_KEY}&select=*`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`,
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-
+                const response = await apiRequest('/app_data?key=eq.' + SHARED_APP_KEY + '&select=*', 'GET');
                 const data = await response.json();
 
                 if (data && data.length > 0) {
                     const state = JSON.parse(data[0].value);
-                    // Validate and migrate if needed
-                    if (!state.version || state.version < 2) {
-                        const migrated = { ...AppState.getDefaultState(), ...state, version: 2 };
-                        await saveToSupabase(migrated);
-                        return migrated;
-                    }
-                    localStorage.setItem('sv_app_cache', JSON.stringify(state));
-                    AppState.lastSync = Date.now();
+                    localStorage.setItem('sv_cache', JSON.stringify(state));
                     return state;
                 } else {
-                    const defaultState = AppState.getDefaultState();
-                    await saveToSupabase(defaultState);
-                    return defaultState;
+                    const def = getDefaultState();
+                    await saveState(def);
+                    return def;
                 }
             } catch (err) {
-                console.error('Supabase load error:', err);
+                console.warn('Load failed, using cache:', err.message);
                 updateConnectionStatus(false);
-                const cached = localStorage.getItem('sv_app_cache');
-                if (cached) return JSON.parse(cached);
-                return AppState.getDefaultState();
+                const cached = localStorage.getItem('sv_cache');
+                return cached ? JSON.parse(cached) : getDefaultState();
             } finally {
                 showSyncStatus(false);
             }
         }
 
-        async function saveToSupabase(state) {
-            if (!AppState.isOnline) {
-                localStorage.setItem('sv_app_pending', JSON.stringify(state));
-                localStorage.setItem('sv_app_cache', JSON.stringify(state));
+        async function saveState(state) {
+            if (!navigator.onLine) {
+                localStorage.setItem('sv_cache', JSON.stringify(state));
+                localStorage.setItem('sv_pending', JSON.stringify(state));
                 return false;
             }
 
+            if (syncInProgress) return false;
+            syncInProgress = true;
             showSyncStatus(true);
+
             try {
-                const payload = {
+                await apiRequest('/app_data', 'POST', {
                     key: SHARED_APP_KEY,
                     value: JSON.stringify(state),
                     updated_at: new Date().toISOString()
-                };
-
-                const response = await fetchWithRetry(
-                    `${SUPABASE_URL}/rest/v1/app_data`,
-                    {
-                        method: 'POST',
-                        headers: {
-                            'apikey': SUPABASE_KEY,
-                            'Authorization': `Bearer ${SUPABASE_KEY}`,
-                            'Content-Type': 'application/json',
-                            'Prefer': 'resolution=merge-duplicates'
-                        },
-                        body: JSON.stringify(payload)
-                    }
-                );
-
-                localStorage.setItem('sv_app_cache', JSON.stringify(state));
-                AppState.lastSync = Date.now();
-                localStorage.removeItem('sv_app_pending');
-
+                });
+                localStorage.setItem('sv_cache', JSON.stringify(state));
+                localStorage.removeItem('sv_pending');
                 return true;
             } catch (err) {
-                console.error('Supabase save error:', err);
+                console.warn('Save failed:', err.message);
                 updateConnectionStatus(false);
-                localStorage.setItem('sv_app_pending', JSON.stringify(state));
-                localStorage.setItem('sv_app_cache', JSON.stringify(state));
+                localStorage.setItem('sv_cache', JSON.stringify(state));
+                localStorage.setItem('sv_pending', JSON.stringify(state));
                 return false;
             } finally {
+                syncInProgress = false;
                 showSyncStatus(false);
             }
         }
 
+        async function getState() {
+            if (!appState) {
+                appState = await loadState();
+            }
+            return appState;
+        }
+
+        async function patchState(updates) {
+            const current = await getState();
+            appState = { ...current, ...updates, updated_at: new Date().toISOString() };
+            renderUI();
+            await saveState(appState);
+            return appState;
+        }
+
         // ============================================
-        // REALTIME SUBSCRIPTIONS (Live Sync)
+        // REALTIME (safe implementation)
         // ============================================
         function initRealtime() {
-            if (!AppState.isOnline) return;
+            if (!navigator.onLine || realtimeWS) return;
 
             try {
-                const wsUrl = `wss://${SUPABASE_URL.replace('https://', '')}/realtime/v1/websocket?apikey=${SUPABASE_KEY}&vsn=1.0.0`;
+                const wsUrl = 'wss://' + SUPABASE_URL.replace('https://', '') + '/realtime/v1/websocket?apikey=' + SUPABASE_KEY + '&vsn=1.0.0';
                 const ws = new WebSocket(wsUrl);
+                let heartbeatInterval = null;
 
                 ws.onopen = () => {
-                    const subscribeMsg = {
-                        topic: `realtime:public:app_data:key=eq.${SHARED_APP_KEY}`,
+                    ws.send(JSON.stringify({
+                        topic: 'realtime:public:app_data:key=eq.' + SHARED_APP_KEY,
                         event: 'phx_join',
                         payload: {},
                         ref: '1'
-                    };
-                    ws.send(JSON.stringify(subscribeMsg));
+                    }));
 
-                    setInterval(() => {
+                    heartbeatInterval = setInterval(() => {
                         if (ws.readyState === WebSocket.OPEN) {
-                            ws.send(JSON.stringify({ 
-                                topic: 'phoenix', 
-                                event: 'heartbeat', 
-                                payload: {}, 
-                                ref: Date.now().toString() 
+                            ws.send(JSON.stringify({
+                                topic: 'phoenix',
+                                event: 'heartbeat',
+                                payload: {},
+                                ref: Date.now().toString()
                             }));
                         }
                     }, 30000);
                 };
 
                 ws.onmessage = (event) => {
-                    const msg = JSON.parse(event.data);
-                    if (msg.event === 'INSERT' || msg.event === 'UPDATE') {
-                        const newData = msg.payload.new || msg.payload;
-                        if (newData && newData.value) {
-                            try {
+                    try {
+                        const msg = JSON.parse(event.data);
+                        if (msg.event === 'INSERT' || msg.event === 'UPDATE') {
+                            const newData = msg.payload.new || msg.payload;
+                            if (newData && newData.value) {
                                 const state = JSON.parse(newData.value);
-                                if (!AppState.data || new Date(state.updated_at) > new Date(AppState.data.updated_at)) {
-                                    AppState.data = state;
-                                    localStorage.setItem('sv_app_cache', JSON.stringify(state));
-                                    refreshUI();
-                                    showToast('Данные обновлены в реальном времени ✨');
+                                if (!appState || new Date(state.updated_at) > new Date(appState.updated_at)) {
+                                    appState = state;
+                                    localStorage.setItem('sv_cache', JSON.stringify(state));
+                                    renderUI();
+                                    showToast('Обновлено в реальном времени ✨');
                                 }
-                            } catch (e) {}
-                        }
-                    }
-                };
-
-                ws.onerror = (err) => { console.error('Realtime error:', err); };
-                ws.onclose = () => { setTimeout(initRealtime, 5000); };
-
-                AppState.realtimeChannel = ws;
-            } catch (err) {
-                console.error('Realtime init failed:', err);
-            }
-        }
-
-        // ============================================
-        // PRESENCE (Live Users Count)
-        // ============================================
-        function initPresence() {
-            AppState.currentUserId = 'user_' + Math.random().toString(36).substring(2, 9);
-
-            setInterval(async () => {
-                if (!AppState.isOnline) return;
-                try {
-                    await fetchWithRetry(
-                        `${SUPABASE_URL}/rest/v1/presence`,
-                        {
-                            method: 'POST',
-                            headers: {
-                                'apikey': SUPABASE_KEY,
-                                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                                'Content-Type': 'application/json',
-                                'Prefer': 'resolution=merge-duplicates'
-                            },
-                            body: JSON.stringify({
-                                user_id: AppState.currentUserId,
-                                app_key: SHARED_APP_KEY,
-                                last_seen: new Date().toISOString()
-                            })
-                        }
-                    );
-                } catch (e) {}
-            }, 30000);
-
-            setInterval(async () => {
-                if (!AppState.isOnline) return;
-                try {
-                    const fiveMinAgo = new Date(Date.now() - 5 * 60000).toISOString();
-                    const response = await fetchWithRetry(
-                        `${SUPABASE_URL}/rest/v1/presence?app_key=eq.${SHARED_APP_KEY}&last_seen=gte.${fiveMinAgo}&select=user_id`,
-                        {
-                            method: 'GET',
-                            headers: {
-                                'apikey': SUPABASE_KEY,
-                                'Authorization': `Bearer ${SUPABASE_KEY}`
                             }
                         }
-                    );
-                    const users = await response.json();
-                    AppState.liveUsers = new Set(users.map(u => u.user_id));
-                    updateLiveUsersUI();
-                } catch (e) {}
-            }, 10000);
-        }
+                    } catch (e) {}
+                };
 
-        function updateLiveUsersUI() {
-            const count = AppState.liveUsers.size;
-            const countEl = document.getElementById('live-count');
-            const avatarsEl = document.getElementById('live-avatars');
+                ws.onerror = () => {};
+                ws.onclose = () => {
+                    if (heartbeatInterval) clearInterval(heartbeatInterval);
+                    realtimeWS = null;
+                    setTimeout(initRealtime, 10000);
+                };
 
-            if (!countEl || !avatarsEl) return;
-
-            countEl.textContent = count + ' онлайн';
-            avatarsEl.innerHTML = '';
-            const colors = ['#FB7185', '#F472B6', '#C084FC', '#34D399', '#FBBF24'];
-            let i = 0;
-            AppState.liveUsers.forEach(userId => {
-                if (i >= 3) return;
-                const avatar = document.createElement('div');
-                avatar.className = 'avatar';
-                avatar.style.background = `linear-gradient(135deg, ${colors[i % colors.length]}, ${colors[(i + 1) % colors.length]})`;
-                avatar.textContent = userId.substring(5, 6).toUpperCase();
-                avatarsEl.appendChild(avatar);
-                i++;
-            });
+                realtimeWS = ws;
+            } catch (err) {
+                console.warn('Realtime init failed:', err);
+            }
         }
 
         // ============================================
-        // DATA ACCESS LAYER
+        // UI RENDERING (no side effects)
         // ============================================
-        async function getAppState() {
-            if (!AppState.data) {
-                AppState.data = await loadFromSupabase();
-            }
-            return AppState.data;
-        }
+        function renderUI() {
+            if (!appState) return;
 
-        async function updateAppState(updates) {
-            const current = await getAppState();
-            const newState = { ...current, ...updates, updated_at: new Date().toISOString() };
-            AppState.data = newState;
-            refreshUI();
+            currentMood = appState.mood || 50;
+            updateMoodMeter();
 
-            const saved = await saveToSupabase(newState);
-            if (!saved) {
-                showToast('Сохранено локально. Синхронизируется при подключении 📱');
-            }
-            return newState;
-        }
+            renderGarden(appState.garden || 0);
 
-        // ============================================
-        // UI REFRESH (Reactive Pattern)
-        // ============================================
-        function refreshUI() {
-            if (!AppState.data) return;
-            const state = AppState.data;
+            const streakEl = document.getElementById('streak-text');
+            if (streakEl) streakEl.textContent = 'День ' + (appState.streak || 1);
 
-            if (state.mood !== undefined) {
-                currentMood = state.mood;
-                updateMoodMeter();
-            }
-            if (state.garden !== undefined) {
-                renderGarden(state.garden);
-            }
-            if (state.streak !== undefined) {
-                const streakEl = document.getElementById('streak-text');
-                if (streakEl) streakEl.textContent = 'День ' + state.streak;
-            }
-            if (state.achievements) {
-                renderAchievements(state.achievements, state);
-            }
-            if (state.photo_url || state.photo_data) {
-                const photoUrl = state.photo_url || state.photo_data;
+            renderAchievements(appState.achievements || [], appState);
+            renderCalendar(appState.visited_days || []);
+
+            if (appState.photo_data) {
                 document.getElementById('photo-memory').classList.remove('hidden');
                 document.getElementById('photo-upload').classList.add('hidden');
-                document.getElementById('memory-img').src = photoUrl;
+                document.getElementById('memory-img').src = appState.photo_data;
             }
-            if (state.letters) {
-                renderFutureLetters(state.letters);
+
+            renderLetters(appState.letters || []);
+            renderBirthday(appState.birthday);
+        }
+
+        function renderGarden(bloomed) {
+            const container = document.getElementById('garden-container');
+            if (!container) return;
+            const flowers = ['🌸','🌺','🌻','🌷','🌹','💐','🌼','🪷','🌿','🌱','🍀','✨'];
+            container.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                const flower = document.createElement('span');
+                flower.className = 'garden-flower text-xl ' + (i < bloomed ? 'bloomed' : '');
+                flower.textContent = flowers[i];
+                container.appendChild(flower);
             }
-            if (state.birthday) {
-                renderBirthday(state.birthday);
+            const gc = document.getElementById('garden-count');
+            if (gc) gc.textContent = bloomed + '/12 цветов';
+        }
+
+        function renderCalendar(visitedDays) {
+            const grid = document.getElementById('calendar-grid');
+            if (!grid) return;
+            const now = new Date();
+            const year = now.getFullYear(), month = now.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+
+            const cm = document.getElementById('calendar-month');
+            if (cm) cm.textContent = monthNames[month];
+
+            grid.innerHTML = '';
+            const weekDays = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+            weekDays.forEach(day => {
+                const el = document.createElement('div');
+                el.className = 'text-xs text-gray-300 font-medium';
+                el.textContent = day;
+                grid.appendChild(el);
+            });
+
+            const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+            for (let i = 0; i < startOffset; i++) { grid.appendChild(document.createElement('div')); }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const el = document.createElement('div');
+                const dateStr = new Date(year, month, day).toDateString();
+                const isVisited = visitedDays.includes(dateStr);
+                const isToday = day === now.getDate();
+                el.className = 'calendar-day ' + (isVisited ? 'visited' : 'text-gray-400') + (isToday ? ' today' : '');
+                el.textContent = isVisited ? '💕' : day;
+                grid.appendChild(el);
+            }
+        }
+
+        function renderAchievements(unlocked, state) {
+            const container = document.getElementById('achievements-container');
+            const welcomeContainer = document.getElementById('welcome-badges');
+            if (!container) return;
+
+            const achievementsList = [
+                { id: 'first_visit', icon: '🌱', name: 'Первый шаг', condition: (s) => (s.total_opens || 0) >= 1 },
+                { id: 'streak_3', icon: '🔥', name: 'Начало привычки', condition: (s) => (s.streak || 0) >= 3 },
+                { id: 'streak_7', icon: '⭐', name: 'Неделя заботы', condition: (s) => (s.streak || 0) >= 7 },
+                { id: 'garden_full', icon: '🌸', name: 'Цветущий сад', condition: (s) => (s.garden || 0) >= 12 },
+                { id: 'mood_100', icon: '💖', name: 'Счастливая Светлана', condition: (s) => (s.mood || 0) >= 100 },
+                { id: 'secret_found', icon: '🦋', name: 'Секретный агент', condition: (s) => s.secret_found }
+            ];
+
+            let count = 0;
+            container.innerHTML = '';
+            if (welcomeContainer) welcomeContainer.innerHTML = '';
+
+            achievementsList.forEach(ach => {
+                const isUnlocked = unlocked.includes(ach.id) || ach.condition(state);
+                if (isUnlocked && !unlocked.includes(ach.id)) {
+                    unlocked.push(ach.id);
+                }
+                const badge = document.createElement('div');
+                badge.className = 'text-2xl ' + (isUnlocked ? 'achievement-badge' : 'opacity-30 grayscale');
+                badge.textContent = ach.icon;
+                badge.title = ach.name + (isUnlocked ? '' : ' (заблокировано)');
+                container.appendChild(badge);
+                if (isUnlocked && welcomeContainer) {
+                    const wb = document.createElement('span');
+                    wb.className = 'text-xl';
+                    wb.textContent = ach.icon;
+                    welcomeContainer.appendChild(wb);
+                    count++;
+                }
+            });
+
+            const countEl = document.getElementById('achievements-count');
+            if (countEl) countEl.textContent = count + '/' + achievementsList.length;
+        }
+
+        function renderLetters(letters) {
+            const now = new Date().toISOString().split('T')[0];
+            const ready = letters.filter(l => l.date <= now && !l.opened);
+            if (ready.length > 0) {
+                const letter = ready[0];
+                letter.opened = true;
+                patchState({ letters: letters });
+                document.getElementById('future-letter-display').classList.remove('hidden');
+                document.getElementById('future-letter-form').classList.add('hidden');
+                document.getElementById('future-letter-text').textContent = letter.text;
+                document.getElementById('future-letter-date').textContent = 'Послание от ' + new Date(letter.created).toLocaleDateString('ru-RU');
+            }
+        }
+
+        function renderBirthday(savedDate) {
+            if (!savedDate) {
+                const section = document.getElementById('birthday-section');
+                if (!section) return;
+                section.classList.remove('hidden');
+                section.innerHTML = '<div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-rose-400 uppercase tracking-wider">🎂 День рождения</span></div><input type="date" id="birthday-input" class="w-full px-3 py-2 rounded-xl bg-white/50 border border-rose-200 text-sm text-gray-600 focus:outline-none focus:border-rose-400 mb-2"><button onclick="saveBirthday()" class="w-full py-2 rounded-xl bg-gradient-to-r from-rose-400 to-pink-400 text-white text-sm font-bold shadow-md">Сохранить 🎂</button>';
+                return;
+            }
+            const bDate = new Date(savedDate);
+            const now = new Date();
+            const nextBday = new Date(now.getFullYear(), bDate.getMonth(), bDate.getDate());
+            if (nextBday < now) nextBday.setFullYear(now.getFullYear() + 1);
+            const diff = Math.ceil((nextBday - now) / (1000 * 60 * 60 * 24));
+            const section = document.getElementById('birthday-section');
+            if (!section) return;
+            section.classList.remove('hidden');
+            const bc = document.getElementById('birthday-countdown');
+            if (!bc) return;
+
+            if (diff === 0) {
+                bc.innerHTML = '🎉 Сегодня твой день рождения! Ты — самый прекрасный подарок этому миру 💖';
+            } else {
+                bc.textContent = '🎂 До твоего дня рождения: ' + diff + ' ' + (diff === 1 ? 'день' : diff < 5 ? 'дня' : 'дней');
             }
         }
 
@@ -976,70 +995,52 @@
             "«Каждый закат — это напоминание, что завтра будет новый рассвет»"
         ];
 
-        const achievementsList = [
-            { id: 'first_visit', icon: '🌱', name: 'Первый шаг', desc: 'Открыть приложение впервые', condition: (s) => s.total_opens >= 1 },
-            { id: 'streak_3', icon: '🔥', name: 'Начало привычки', desc: '3 дня подряд', condition: (s) => s.streak >= 3 },
-            { id: 'streak_7', icon: '⭐', name: 'Неделя заботы', desc: '7 дней подряд', condition: (s) => s.streak >= 7 },
-            { id: 'garden_full', icon: '🌸', name: 'Цветущий сад', desc: 'Вырастить все 12 цветов', condition: (s) => s.garden >= 12 },
-            { id: 'mood_100', icon: '💖', name: 'Счастливая Светлана', desc: 'Достичь 100% настроения', condition: (s) => s.mood >= 100 },
-            { id: 'secret_found', icon: '🦋', name: 'Секретный агент', desc: 'Найти секретное сообщение', condition: (s) => s.secret_found }
-        ];
-
-        const emojis = { sad: "🤗", miss: "💌", lonely: "🌙", support: "💪", cute: "💖" };
-        let currentTyping = null, currentMood = 50, currentCategory = null, dailyShown = false, totalOpens = 0, currentTheme = 'rose';
-        let soundEnabled = true, speakEnabled = false, audioCtx = null, currentMessageText = '';
-        let shownMessages = { sad: [], miss: [], lonely: [], support: [], cute: [] };
-
         // ============================================
-        // INITIALIZATION
+        // INITIALIZATION (safe order)
         // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
-            // Setup network listeners
+            // 1. Setup network listeners
             window.addEventListener('online', () => { 
                 updateConnectionStatus(true); 
-                syncPendingData();
                 initRealtime();
             });
             window.addEventListener('offline', () => updateConnectionStatus(false));
 
-            // Initialize app state from Supabase
-            document.getElementById('welcome-loading').classList.remove('hidden');
-            document.getElementById('welcome-btn').classList.add('hidden');
+            // 2. Show loading
+            const loading = document.getElementById('welcome-loading');
+            const btn = document.getElementById('welcome-btn');
+            if (loading) loading.classList.remove('hidden');
+            if (btn) btn.classList.add('hidden');
 
+            // 3. Load state (with timeout safety)
             try {
-                await getAppState();
-                initDailyMessage();
-                initCalendar();
-                checkNightMode();
-                initShake();
-                initQuote();
-                initWeather();
-                initTouchParticles();
-                initHoliday();
-                updateTimeGreeting();
-                initTilt();
-                initRealtime();
-                initPresence();
-
-                document.getElementById('welcome-loading').classList.add('hidden');
-                document.getElementById('welcome-btn').classList.remove('hidden');
+                const loadPromise = getState();
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Timeout')), 5000)
+                );
+                await Promise.race([loadPromise, timeoutPromise]);
+                stateLoaded = true;
             } catch (e) {
-                console.error('Init error:', e);
-                document.getElementById('welcome-loading').classList.add('hidden');
-                document.getElementById('welcome-btn').classList.remove('hidden');
+                console.warn('State load timeout, using defaults');
+                appState = getDefaultState();
             }
-        });
 
-        async function syncPendingData() {
-            const pending = localStorage.getItem('sv_app_pending');
-            if (pending && AppState.isOnline) {
-                try {
-                    const state = JSON.parse(pending);
-                    await saveToSupabase(state);
-                    showToast('Данные синхронизированы с облаком ☁️');
-                } catch (e) {}
-            }
-        }
+            // 4. Initialize UI (non-async)
+            initQuote();
+            initWeather();
+            initTouchParticles();
+            initHoliday();
+            updateTimeGreeting();
+            initShake();
+            checkNightMode();
+
+            // 5. Start background features
+            initRealtime();
+
+            // 6. Show button
+            if (loading) loading.classList.add('hidden');
+            if (btn) btn.classList.remove('hidden');
+        });
 
         function updateTimeGreeting() {
             const hour = new Date().getHours();
@@ -1064,10 +1065,8 @@
             else if (month === 3 && day === 8) { holidayType = 'womensDay'; items = ['🌷','💐','🌸','💖','✨']; }
             else if ((month === 12 && day === 31) || (month === 1 && day === 1)) { holidayType = 'newYear'; items = ['❄️','🎄','⭐','✨','🎉']; }
 
-            // Check birthday from shared state
-            const state = AppState.data;
-            if (state && state.birthday) {
-                const bDate = new Date(state.birthday);
+            if (appState && appState.birthday) {
+                const bDate = new Date(appState.birthday);
                 if (month === bDate.getMonth() + 1 && day === bDate.getDate()) { 
                     holidayType = 'birthday'; 
                     items = ['🎂','🎈','🎉','💖','✨']; 
@@ -1097,23 +1096,6 @@
                 setTimeout(() => el.remove(), 7000);
             }, 800);
             setTimeout(() => clearInterval(interval), duration);
-        }
-
-        function initTilt() {
-            if (!window.DeviceOrientationEvent) return;
-            const container = document.getElementById('main-screen');
-            if (!container) return;
-            window.addEventListener('deviceorientation', (e) => {
-                const beta = Math.min(Math.max(e.beta, -30), 30);
-                const gamma = Math.min(Math.max(e.gamma, -30), 30);
-                const rotateX = beta * -0.3;
-                const rotateY = gamma * 0.3;
-                const cards = container.querySelectorAll('.glass-card, .glass');
-                cards.forEach((card, i) => {
-                    const depth = (i % 3 + 1) * 5;
-                    card.style.transform = 'perspective(1000px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateZ(' + depth + 'px)';
-                });
-            });
         }
 
         function toggleSpeak() {
@@ -1194,55 +1176,12 @@
             if (dq) dq.textContent = randomQuote;
         }
 
-        function renderAchievements(unlocked, state) {
-            const container = document.getElementById('achievements-container');
-            const welcomeContainer = document.getElementById('welcome-badges');
-            if (!container) return;
-
-            let count = 0;
-            container.innerHTML = '';
-            if (welcomeContainer) welcomeContainer.innerHTML = '';
-
-            achievementsList.forEach(ach => {
-                const isUnlocked = unlocked.includes(ach.id) || ach.condition(state);
-                if (isUnlocked && !unlocked.includes(ach.id)) {
-                    unlocked.push(ach.id);
-                }
-                const badge = document.createElement('div');
-                badge.className = 'text-2xl ' + (isUnlocked ? 'achievement-badge' : 'opacity-30 grayscale');
-                badge.textContent = ach.icon;
-                badge.title = ach.name + (isUnlocked ? '' : ' (заблокировано)');
-                container.appendChild(badge);
-                if (isUnlocked && welcomeContainer) {
-                    const welcomeBadge = document.createElement('span');
-                    welcomeBadge.className = 'text-xl';
-                    welcomeBadge.textContent = ach.icon;
-                    welcomeContainer.appendChild(welcomeBadge);
-                    count++;
-                }
-            });
-
-            const countEl = document.getElementById('achievements-count');
-            if (countEl) countEl.textContent = count + '/' + achievementsList.length;
-
-            // Save updated achievements
-            if (state) {
-                state.achievements = unlocked;
-                updateAppState({ achievements: unlocked });
-            }
-        }
-
-        function initAchievements() {
-            const state = AppState.data;
-            if (state) renderAchievements(state.achievements || [], state);
-        }
-
         async function initDailyMessage() {
             const today = new Date();
             const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
             const dailyMsg = dailyMessages[dayOfYear % dailyMessages.length];
 
-            const state = await getAppState();
+            const state = await getState();
             const lastVisit = state.last_visit;
             const todayStr = today.toDateString();
             let streak = state.streak || 1;
@@ -1255,7 +1194,7 @@
                 if (lastDate && lastDate.toDateString() === yesterday.toDateString()) streak++;
                 else if (!lastDate || lastDate.toDateString() !== todayStr) streak = 1;
 
-                await updateAppState({
+                await patchState({
                     last_visit: todayStr,
                     streak: streak,
                     daily_shown: false
@@ -1270,81 +1209,21 @@
             window.currentDailyMessage = dailyMsg;
         }
 
-        function renderGarden(bloomed) {
-            const container = document.getElementById('garden-container');
-            if (!container) return;
-            const flowers = ['🌸','🌺','🌻','🌷','🌹','💐','🌼','🪷','🌿','🌱','🍀','✨'];
-            container.innerHTML = '';
-            for (let i = 0; i < 12; i++) {
-                const flower = document.createElement('span');
-                flower.className = 'garden-flower text-xl ' + (i < bloomed ? 'bloomed' : '');
-                flower.textContent = flowers[i];
-                container.appendChild(flower);
-            }
-            const gc = document.getElementById('garden-count');
-            if (gc) gc.textContent = bloomed + '/12 цветов';
-        }
-
-        function initGarden() {
-            const state = AppState.data;
-            if (state) renderGarden(state.garden || 0);
-        }
-
         async function bloomFlower() {
-            const state = await getAppState();
+            const state = await getState();
             const bloomed = state.garden || 0;
             if (bloomed < 12) {
-                await updateAppState({ garden: bloomed + 1 });
-                initGarden();
-                initAchievements();
-            }
-        }
-
-        function initCalendar() {
-            const grid = document.getElementById('calendar-grid');
-            if (!grid) return;
-            const now = new Date();
-            const year = now.getFullYear(), month = now.getMonth();
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const firstDay = new Date(year, month, 1).getDay();
-            const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-
-            const cm = document.getElementById('calendar-month');
-            if (cm) cm.textContent = monthNames[month];
-
-            const weekDays = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
-            weekDays.forEach(day => {
-                const el = document.createElement('div');
-                el.className = 'text-xs text-gray-300 font-medium';
-                el.textContent = day;
-                grid.appendChild(el);
-            });
-
-            const startOffset = firstDay === 0 ? 6 : firstDay - 1;
-            for (let i = 0; i < startOffset; i++) { grid.appendChild(document.createElement('div')); }
-
-            const state = AppState.data;
-            const visitedDays = state ? (state.visited_days || []) : [];
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const el = document.createElement('div');
-                const dateStr = new Date(year, month, day).toDateString();
-                const isVisited = visitedDays.includes(dateStr);
-                const isToday = day === now.getDate();
-                el.className = 'calendar-day ' + (isVisited ? 'visited' : 'text-gray-400') + (isToday ? ' today' : '');
-                el.textContent = isVisited ? '💕' : day;
-                grid.appendChild(el);
+                await patchState({ garden: bloomed + 1 });
             }
         }
 
         async function markTodayVisited() {
-            const state = await getAppState();
+            const state = await getState();
             const visitedDays = state.visited_days || [];
             const todayStr = new Date().toDateString();
             if (!visitedDays.includes(todayStr)) {
                 visitedDays.push(todayStr);
-                await updateAppState({ visited_days: visitedDays });
-                initCalendar();
+                await patchState({ visited_days: visitedDays });
             }
         }
 
@@ -1416,8 +1295,7 @@
             createHeartParticles();
             currentCategory = 'secret';
 
-            await updateAppState({ secret_found: true });
-            initAchievements();
+            await patchState({ secret_found: true });
 
             const sh = document.getElementById('shake-hint');
             if (sh) sh.style.display = 'none';
@@ -1431,7 +1309,7 @@
             if (theme === 'lavender') body.style.background = 'linear-gradient(135deg, #F3E8FF 0%, #E0E7FF 50%, #EDE9FE 100%)';
             else if (theme === 'peach') body.style.background = 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 50%, #FEF3C7 100%)';
             else body.style.background = 'linear-gradient(135deg, #FFF0F5 0%, #FFE4E1 50%, #FFF8F0 100%)';
-            updateAppState({ theme: theme });
+            patchState({ theme: theme });
         }
 
         function openReply() {
@@ -1443,12 +1321,31 @@
             document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('main-screen').classList.remove('hidden');
             document.getElementById('main-screen').style.animation = 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards';
-            createParticles();
-            await markTodayVisited();
 
-            const state = await getAppState();
-            await updateAppState({ total_opens: (state.total_opens || 0) + 1 });
-            initAchievements();
+            // Start particles (single interval)
+            if (!particlesInterval) {
+                particlesInterval = setInterval(() => {
+                    if (Math.random() > 0.7) {
+                        const symbols = ['🌸','✨','💕','🌷','☁️'];
+                        const el = document.createElement('div');
+                        el.className = 'heart-particle text-2xl';
+                        el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                        el.style.left = Math.random() * 100 + 'vw';
+                        el.style.bottom = '-50px';
+                        el.style.fontSize = (Math.random() * 15 + 10) + 'px';
+                        document.body.appendChild(el);
+                        setTimeout(() => el.remove(), 4000);
+                    }
+                }, 2000);
+            }
+
+            await markTodayVisited();
+            const state = await getState();
+            await patchState({ total_opens: (state.total_opens || 0) + 1 });
+
+            // Render all UI
+            renderUI();
+            initDailyMessage();
         }
 
         function getRandomMessage(category) {
@@ -1473,7 +1370,7 @@
                 randomMsg = getRandomMessage(category);
             }
 
-            const state = await getAppState();
+            const state = await getState();
             if ((state.total_opens || 0) >= 10 && Math.random() > 0.8) {
                 randomMsg = secretMessages[Math.floor(Math.random() * secretMessages.length)];
             }
@@ -1496,7 +1393,7 @@
         async function showDailySpecial() {
             if (dailyShown) { showToast('Сегодняшнее послание уже открыто 💕'); return; }
             dailyShown = true;
-            await updateAppState({ daily_shown: true });
+            await patchState({ daily_shown: true });
 
             const today = new Date();
             const dateStr = today.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
@@ -1534,7 +1431,7 @@
             document.getElementById('feedback-screen').classList.add('hidden');
             if (helped) {
                 currentMood = Math.min(100, currentMood + 15);
-                await updateAppState({ mood: currentMood });
+                await patchState({ mood: currentMood });
                 updateMoodMeter();
                 createConfetti();
                 bloomFlower();
@@ -1626,22 +1523,6 @@
             setTimeout(() => { toast.classList.add('hidden'); }, 2500);
         }
 
-        function createParticles() {
-            const symbols = ['🌸','✨','💕','🌷','☁️'];
-            setInterval(() => {
-                if (Math.random() > 0.7) {
-                    const el = document.createElement('div');
-                    el.className = 'heart-particle text-2xl';
-                    el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-                    el.style.left = Math.random() * 100 + 'vw';
-                    el.style.bottom = '-50px';
-                    el.style.fontSize = (Math.random() * 15 + 10) + 'px';
-                    document.body.appendChild(el);
-                    setTimeout(() => el.remove(), 4000);
-                }
-            }, 2000);
-        }
-
         function createHeartParticles() {
             for (let i = 0; i < 8; i++) {
                 setTimeout(() => {
@@ -1692,42 +1573,10 @@
             }, () => {});
         }
 
-        function renderBirthday(savedDate) {
-            if (!savedDate) {
-                const section = document.getElementById('birthday-section');
-                if (!section) return;
-                section.classList.remove('hidden');
-                section.innerHTML = '<div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-rose-400 uppercase tracking-wider">🎂 День рождения</span></div><input type="date" id="birthday-input" class="w-full px-3 py-2 rounded-xl bg-white/50 border border-rose-200 text-sm text-gray-600 focus:outline-none focus:border-rose-400 mb-2"><button onclick="saveBirthday()" class="w-full py-2 rounded-xl bg-gradient-to-r from-rose-400 to-pink-400 text-white text-sm font-bold shadow-md">Сохранить 🎂</button>';
-                return;
-            }
-            const bDate = new Date(savedDate);
-            const now = new Date();
-            const nextBday = new Date(now.getFullYear(), bDate.getMonth(), bDate.getDate());
-            if (nextBday < now) nextBday.setFullYear(now.getFullYear() + 1);
-            const diff = Math.ceil((nextBday - now) / (1000 * 60 * 60 * 24));
-            const section = document.getElementById('birthday-section');
-            if (!section) return;
-            section.classList.remove('hidden');
-            const bc = document.getElementById('birthday-countdown');
-            if (!bc) return;
-
-            if (diff === 0) {
-                bc.innerHTML = '🎉 Сегодня твой день рождения! Ты — самый прекрасный подарок этому миру 💖';
-                const hMsg = holidayMessages.birthday[Math.floor(Math.random() * holidayMessages.birthday.length)];
-                setTimeout(() => { showHolidayMessage(hMsg); }, 1000);
-            } else {
-                bc.textContent = '🎂 До твоего дня рождения: ' + diff + ' ' + (diff === 1 ? 'день' : diff < 5 ? 'дня' : 'дней');
-            }
-        }
-
-        function initBirthday(date) {
-            renderBirthday(date);
-        }
-
         async function saveBirthday() {
             const val = document.getElementById('birthday-input').value;
             if (!val) return;
-            await updateAppState({ birthday: val });
+            await patchState({ birthday: val });
             showToast('День рождения сохранён! 🎂');
             renderBirthday(val);
         }
@@ -1753,7 +1602,7 @@
                     ctx.drawImage(img, 0, 0, w, h);
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
-                    await updateAppState({ photo_data: dataUrl, photo_url: dataUrl });
+                    await patchState({ photo_data: dataUrl });
 
                     document.getElementById('photo-memory').classList.remove('hidden');
                     document.getElementById('photo-upload').classList.add('hidden');
@@ -1776,43 +1625,15 @@
             document.body.appendChild(box);
         }
 
-        function initPhotoMemory() {
-            const state = AppState.data;
-            if (state && (state.photo_url || state.photo_data)) {
-                const photoUrl = state.photo_url || state.photo_data;
-                document.getElementById('photo-memory').classList.remove('hidden');
-                document.getElementById('photo-upload').classList.add('hidden');
-                document.getElementById('memory-img').src = photoUrl;
-            }
-        }
-
-        function renderFutureLetters(letters) {
-            const now = new Date().toISOString().split('T')[0];
-            const ready = letters.filter(l => l.date <= now && !l.opened);
-            if (ready.length > 0) {
-                const letter = ready[0];
-                letter.opened = true;
-                updateAppState({ letters: letters });
-                document.getElementById('future-letter-display').classList.remove('hidden');
-                document.getElementById('future-letter-form').classList.add('hidden');
-                document.getElementById('future-letter-text').textContent = letter.text;
-                document.getElementById('future-letter-date').textContent = 'Послание от ' + new Date(letter.created).toLocaleDateString('ru-RU');
-            }
-        }
-
-        function initFutureLetters(letters) {
-            renderFutureLetters(letters);
-        }
-
         async function saveFutureLetter() {
             const date = document.getElementById('future-date').value;
             const text = document.getElementById('future-text').value.trim();
             if (!date || !text) { showToast('Заполни дату и текст 💌'); return; }
 
-            const state = await getAppState();
+            const state = await getState();
             const letters = state.letters || [];
             letters.push({ date: date, text: text, created: new Date().toISOString(), opened: false });
-            await updateAppState({ letters: letters });
+            await patchState({ letters: letters });
 
             document.getElementById('future-date').value = '';
             document.getElementById('future-text').value = '';

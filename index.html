@@ -95,6 +95,19 @@
         .speak-btn { transition: all 0.2s ease; }
         .speak-btn.active { background: linear-gradient(135deg, #FB7185, #F472B6); color: white; }
         .sync-indicator { position: fixed; bottom: 10px; right: 10px; z-index: 100; font-size: 10px; opacity: 0.5; }
+        .online-indicator { width: 8px; height: 8px; border-radius: 50%; background: #34D399; box-shadow: 0 0 8px #34D399; animation: pulse-green 2s infinite; }
+        .offline-indicator { width: 8px; height: 8px; border-radius: 50%; background: #FB7185; }
+        @keyframes pulse-green { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .connection-status { transition: all 0.3s ease; }
+        .live-users { display: flex; align-items: center; gap: 4px; }
+        .live-users-avatars { display: flex; }
+        .live-users-avatars .avatar { width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; margin-left: -8px; background: linear-gradient(135deg, #FB7185, #F472B6); display: flex; align-items: center; justify-content: center; font-size: 10px; color: white; font-weight: bold; }
+        .live-users-avatars .avatar:first-child { margin-left: 0; }
+        .live-badge { background: linear-gradient(135deg, #FB7185, #F472B6); color: white; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 700; }
+        .toast-progress { position: absolute; bottom: 0; left: 0; height: 3px; background: linear-gradient(90deg, #FB7185, #F472B6); border-radius: 0 0 12px 12px; animation: toast-timer 2.5s linear forwards; }
+        @keyframes toast-timer { 0% { width: 100%; } 100% { width: 0%; } }
+        .ripple { position: absolute; border-radius: 50%; transform: scale(0); animation: ripple-effect 0.6s linear; background: rgba(255,255,255,0.3); }
+        @keyframes ripple-effect { to { transform: scale(4); opacity: 0; } }
     </style>
 <base target="_blank">
 </head>
@@ -109,6 +122,18 @@
         <div class="bg-shape bg-purple-100 w-40 h-40 bottom-40 right-20" style="animation-delay:1s"></div>
     </div>
 
+    <!-- Connection Status Bar -->
+    <div id="connection-bar" class="fixed top-0 left-0 right-0 z-[90] px-4 py-2 flex items-center justify-between glass hidden" style="padding-top: max(env(safe-area-inset-top), 8px);">
+        <div class="flex items-center gap-2">
+            <div id="connection-dot" class="online-indicator"></div>
+            <span id="connection-text" class="text-xs font-semibold text-gray-600">Онлайн</span>
+        </div>
+        <div class="live-users" id="live-users">
+            <div class="live-users-avatars" id="live-avatars"></div>
+            <span class="live-badge" id="live-count">1 онлайн</span>
+        </div>
+    </div>
+
     <div id="app" class="relative z-10 max-w-md mx-auto min-h-screen flex flex-col">
 
         <div id="welcome-screen" class="flex-1 flex flex-col items-center justify-center px-6 text-center" style="animation: fadeIn 0.5s ease-out forwards;">
@@ -119,7 +144,17 @@
             <h1 class="text-3xl font-bold mb-3 gradient-text leading-tight" id="welcome-title">Для самой<br>прекрасной Светланы</h1>
             <p class="text-rose-400 text-lg mb-6 font-medium opacity-80">Твоё личное уютное местечко</p>
             <div class="flex gap-2 mb-6" id="welcome-badges"></div>
-            <button onclick="showMain()" class="glass-card px-10 py-4 rounded-full text-rose-500 font-bold text-lg hover:shadow-lg hover:shadow-rose-200/50 transition-all duration-300 active:scale-95 group">
+
+            <div id="welcome-loading" class="mb-4 hidden">
+                <div class="flex items-center justify-center gap-1 mb-2">
+                    <div class="w-2 h-2 bg-rose-400 rounded-full animate-bounce" style="animation-delay:0s"></div>
+                    <div class="w-2 h-2 bg-rose-400 rounded-full animate-bounce" style="animation-delay:0.1s"></div>
+                    <div class="w-2 h-2 bg-rose-400 rounded-full animate-bounce" style="animation-delay:0.2s"></div>
+                </div>
+                <p class="text-xs text-rose-300">Синхронизация с облаком...</p>
+            </div>
+
+            <button onclick="showMain()" id="welcome-btn" class="glass-card px-10 py-4 rounded-full text-rose-500 font-bold text-lg hover:shadow-lg hover:shadow-rose-200/50 transition-all duration-300 active:scale-95 group">
                 <span class="group-hover:scale-110 inline-block transition-transform">Открыть с любовью ✨</span>
             </button>
             <div class="mt-6 glass rounded-2xl p-4 max-w-xs mx-auto">
@@ -137,6 +172,12 @@
         </div>
 
         <div id="main-screen" class="hidden flex-1 flex flex-col px-5 pt-6 pb-6 tilt-container">
+            <!-- Sync Status -->
+            <div id="sync-status" class="mb-2 flex items-center justify-center gap-2 text-xs text-rose-400 opacity-0 transition-opacity duration-300">
+                <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span>Синхронизация...</span>
+            </div>
+
             <div class="text-center mb-4" style="animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
                 <div class="flex items-center justify-between mb-3">
                     <div class="inline-flex items-center gap-2 glass px-4 py-2 rounded-full">
@@ -232,6 +273,7 @@
             <div class="glass rounded-2xl p-3 mb-3">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">📸 Наше воспоминание</span>
+                    <span class="text-xs text-rose-400" id="photo-sync-status"></span>
                 </div>
                 <div id="photo-memory" class="hidden">
                     <div class="photo-frame mb-2" onclick="openLightbox()">
@@ -244,7 +286,7 @@
                         <input type="file" accept="image/*" class="hidden" onchange="handlePhotoUpload(event)">
                         <div class="border-2 border-dashed border-rose-200 rounded-xl p-4 hover:border-rose-400 transition-colors">
                             <span class="text-2xl">📷</span>
-                            <p class="text-xs text-gray-400 mt-1">Загрузить фото</p>
+                            <p class="text-xs text-gray-400 mt-1">Загрузить фото для всех</p>
                         </div>
                     </label>
                 </div>
@@ -253,6 +295,7 @@
             <div class="glass rounded-2xl p-3 mb-3">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xs font-bold text-rose-400 uppercase tracking-wider">💌 Послание в будущее</span>
+                    <span class="text-xs text-rose-400" id="letter-sync-status"></span>
                 </div>
                 <div id="future-letter-display" class="hidden mb-2">
                     <div class="letter-card rounded-xl p-3 text-center">
@@ -262,7 +305,7 @@
                 </div>
                 <div id="future-letter-form">
                     <input type="date" id="future-date" class="w-full mb-2 px-3 py-2 rounded-xl bg-white/50 border border-rose-200 text-sm text-gray-600 focus:outline-none focus:border-rose-400">
-                    <textarea id="future-text" placeholder="Напиши письмо себе..." class="w-full mb-2 px-3 py-2 rounded-xl bg-white/50 border border-rose-200 text-sm text-gray-600 focus:outline-none focus:border-rose-400 resize-none" rows="2"></textarea>
+                    <textarea id="future-text" placeholder="Напиши письмо, которое увидят все..." class="w-full mb-2 px-3 py-2 rounded-xl bg-white/50 border border-rose-200 text-sm text-gray-600 focus:outline-none focus:border-rose-400 resize-none" rows="2"></textarea>
                     <button onclick="saveFutureLetter()" class="w-full py-2 rounded-xl bg-gradient-to-r from-rose-400 to-pink-400 text-white text-sm font-bold shadow-md">Сохранить письмо 📬</button>
                 </div>
             </div>
@@ -348,133 +391,395 @@
             </div>
         </div>
 
-        <div id="toast" class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 z-[60] glass px-6 py-3 rounded-full shadow-lg" style="animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
+        <div id="toast" class="hidden fixed top-20 left-1/2 transform -translate-x-1/2 z-[60] glass px-6 py-3 rounded-full shadow-lg overflow-hidden" style="animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
             <span id="toast-text" class="text-sm font-semibold text-rose-500">Сохранено! 💕</span>
+            <div class="toast-progress"></div>
         </div>
     </div>
 
     <script>
-
+        // ============================================
+        // SUPABASE CONFIGURATION
+        // ============================================
         const SUPABASE_URL = 'https://xndjsotqfhjuoznmcoyr.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhuZGpzb3RxZmhqdW96bm1jb3lyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNzU2MTQsImV4cCI6MjA5Mzg1MTYxNH0.Z462flbS9BQyTSqO4YcPPZ0688T0805lEdCyoA0azO4';
-        let serverData = {};
-        let dataLoaded = false;
-        let deviceId = localStorage.getItem('svetlana_device_id');
-        if (!deviceId) {
-            deviceId = 'dev_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-            localStorage.setItem('svetlana_device_id', deviceId);
+
+        // Единый shared ключ для всех пользователей по ссылке
+        const SHARED_APP_KEY = 'svetlana_shared_app_v2';
+
+        // ============================================
+        // STATE MANAGEMENT (Singleton Pattern)
+        // ============================================
+        const AppState = {
+            data: null,
+            lastSync: null,
+            isOnline: navigator.onLine,
+            isSyncing: false,
+            realtimeChannel: null,
+            currentUserId: null,
+            liveUsers: new Set(),
+
+            getDefaultState() {
+                return {
+                    version: 2,
+                    updated_at: new Date().toISOString(),
+                    mood: 50,
+                    streak: 1,
+                    last_visit: new Date().toDateString(),
+                    daily_shown: false,
+                    garden: 0,
+                    visited_days: [],
+                    achievements: [],
+                    secret_found: false,
+                    total_opens: 0,
+                    birthday: '',
+                    photo_url: '',
+                    photo_data: '',
+                    letters: [],
+                    shown_messages: { sad: [], miss: [], lonely: [], support: [], cute: [] },
+                    theme: 'rose'
+                };
+            }
+        };
+
+        // ============================================
+        // NETWORK LAYER with Retry Logic
+        // ============================================
+        async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000);
+                    const response = await fetch(url, { ...options, signal: controller.signal });
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) {
+                        const error = await response.text();
+                        throw new Error(`HTTP ${response.status}: ${error}`);
+                    }
+                    return response;
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(r => setTimeout(r, delay * (i + 1)));
+                }
+            }
         }
 
-        // Save deviceId to cloud registry
-        async function registerDevice() {
+        function showSyncStatus(show) {
+            const el = document.getElementById('sync-status');
+            if (el) el.style.opacity = show ? '1' : '0';
+        }
+
+        function updateConnectionStatus(online) {
+            AppState.isOnline = online;
+            const bar = document.getElementById('connection-bar');
+            const dot = document.getElementById('connection-dot');
+            const text = document.getElementById('connection-text');
+
+            if (!bar || !dot || !text) return;
+
+            if (!online) {
+                bar.classList.remove('hidden');
+                dot.className = 'offline-indicator';
+                text.textContent = 'Офлайн режим';
+                text.className = 'text-xs font-semibold text-rose-400';
+            } else {
+                bar.classList.add('hidden');
+                dot.className = 'online-indicator';
+                text.textContent = 'Онлайн';
+                text.className = 'text-xs font-semibold text-gray-600';
+            }
+        }
+
+        // ============================================
+        // SUPABASE CORE OPERATIONS (Primary Source)
+        // ============================================
+        async function loadFromSupabase() {
+            if (!AppState.isOnline) {
+                const cached = localStorage.getItem('sv_app_cache');
+                if (cached) return JSON.parse(cached);
+                return AppState.getDefaultState();
+            }
+
+            showSyncStatus(true);
             try {
-                const res = await fetch(SUPABASE_URL + '/rest/v1/app_data?key=eq.device_registry', {
-                    method: 'GET',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_KEY,
-                        'Content-Type': 'application/json'
+                const response = await fetchWithRetry(
+                    `${SUPABASE_URL}/rest/v1/app_data?key=eq.${SHARED_APP_KEY}&select=*`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'apikey': SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
+                            'Content-Type': 'application/json'
+                        }
                     }
-                });
-                let registry = [];
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.length > 0) {
-                        try { registry = JSON.parse(data[0].value); } catch(e) {}
+                );
+
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    const state = JSON.parse(data[0].value);
+                    // Validate and migrate if needed
+                    if (!state.version || state.version < 2) {
+                        const migrated = { ...AppState.getDefaultState(), ...state, version: 2 };
+                        await saveToSupabase(migrated);
+                        return migrated;
                     }
+                    localStorage.setItem('sv_app_cache', JSON.stringify(state));
+                    AppState.lastSync = Date.now();
+                    return state;
+                } else {
+                    const defaultState = AppState.getDefaultState();
+                    await saveToSupabase(defaultState);
+                    return defaultState;
                 }
-                if (!registry.includes(deviceId)) {
-                    registry.push(deviceId);
-                    await fetch(SUPABASE_URL + '/rest/v1/app_data', {
+            } catch (err) {
+                console.error('Supabase load error:', err);
+                updateConnectionStatus(false);
+                const cached = localStorage.getItem('sv_app_cache');
+                if (cached) return JSON.parse(cached);
+                return AppState.getDefaultState();
+            } finally {
+                showSyncStatus(false);
+            }
+        }
+
+        async function saveToSupabase(state) {
+            if (!AppState.isOnline) {
+                localStorage.setItem('sv_app_pending', JSON.stringify(state));
+                localStorage.setItem('sv_app_cache', JSON.stringify(state));
+                return false;
+            }
+
+            showSyncStatus(true);
+            try {
+                const payload = {
+                    key: SHARED_APP_KEY,
+                    value: JSON.stringify(state),
+                    updated_at: new Date().toISOString()
+                };
+
+                const response = await fetchWithRetry(
+                    `${SUPABASE_URL}/rest/v1/app_data`,
+                    {
                         method: 'POST',
                         headers: {
                             'apikey': SUPABASE_KEY,
-                            'Authorization': 'Bearer ' + SUPABASE_KEY,
+                            'Authorization': `Bearer ${SUPABASE_KEY}`,
                             'Content-Type': 'application/json',
                             'Prefer': 'resolution=merge-duplicates'
                         },
-                        body: JSON.stringify({ key: 'device_registry', value: JSON.stringify(registry), updated_at: new Date().toISOString() })
-                    });
-                }
-            } catch (e) {}
-        }
-
-        async function serverLoad() {
-            try {
-                const res = await fetch(SUPABASE_URL + '/rest/v1/app_data?select=*', {
-                    method: 'GET',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_KEY,
-                        'Content-Type': 'application/json'
+                        body: JSON.stringify(payload)
                     }
-                });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                const data = await res.json();
-                serverData = {};
-                data.forEach(row => {
-                    try { serverData[row.key] = JSON.parse(row.value); } catch(e) { serverData[row.key] = row.value; }
-                });
-                dataLoaded = true;
-                console.log('Supabase loaded, keys:', Object.keys(serverData));
-            } catch (e) {
-                console.error('Load error:', e);
-                dataLoaded = false;
+                );
+
+                localStorage.setItem('sv_app_cache', JSON.stringify(state));
+                AppState.lastSync = Date.now();
+                localStorage.removeItem('sv_app_pending');
+
+                return true;
+            } catch (err) {
+                console.error('Supabase save error:', err);
+                updateConnectionStatus(false);
+                localStorage.setItem('sv_app_pending', JSON.stringify(state));
+                localStorage.setItem('sv_app_cache', JSON.stringify(state));
+                return false;
+            } finally {
+                showSyncStatus(false);
             }
         }
 
-        async function serverSave(key, value) {
-            if (!dataLoaded) return;
+        // ============================================
+        // REALTIME SUBSCRIPTIONS (Live Sync)
+        // ============================================
+        function initRealtime() {
+            if (!AppState.isOnline) return;
+
             try {
-                const jsonValue = JSON.stringify(value);
-                const res = await fetch(SUPABASE_URL + '/rest/v1/app_data', {
-                    method: 'POST',
-                    headers: {
-                        'apikey': SUPABASE_KEY,
-                        'Authorization': 'Bearer ' + SUPABASE_KEY,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'resolution=merge-duplicates'
-                    },
-                    body: JSON.stringify({ key: key, value: jsonValue, updated_at: new Date().toISOString() })
-                });
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-            } catch (e) {
-                console.error('Save error:', e);
+                const wsUrl = `wss://${SUPABASE_URL.replace('https://', '')}/realtime/v1/websocket?apikey=${SUPABASE_KEY}&vsn=1.0.0`;
+                const ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    const subscribeMsg = {
+                        topic: `realtime:public:app_data:key=eq.${SHARED_APP_KEY}`,
+                        event: 'phx_join',
+                        payload: {},
+                        ref: '1'
+                    };
+                    ws.send(JSON.stringify(subscribeMsg));
+
+                    setInterval(() => {
+                        if (ws.readyState === WebSocket.OPEN) {
+                            ws.send(JSON.stringify({ 
+                                topic: 'phoenix', 
+                                event: 'heartbeat', 
+                                payload: {}, 
+                                ref: Date.now().toString() 
+                            }));
+                        }
+                    }, 30000);
+                };
+
+                ws.onmessage = (event) => {
+                    const msg = JSON.parse(event.data);
+                    if (msg.event === 'INSERT' || msg.event === 'UPDATE') {
+                        const newData = msg.payload.new || msg.payload;
+                        if (newData && newData.value) {
+                            try {
+                                const state = JSON.parse(newData.value);
+                                if (!AppState.data || new Date(state.updated_at) > new Date(AppState.data.updated_at)) {
+                                    AppState.data = state;
+                                    localStorage.setItem('sv_app_cache', JSON.stringify(state));
+                                    refreshUI();
+                                    showToast('Данные обновлены в реальном времени ✨');
+                                }
+                            } catch (e) {}
+                        }
+                    }
+                };
+
+                ws.onerror = (err) => { console.error('Realtime error:', err); };
+                ws.onclose = () => { setTimeout(initRealtime, 5000); };
+
+                AppState.realtimeChannel = ws;
+            } catch (err) {
+                console.error('Realtime init failed:', err);
             }
         }
 
-        // Personal data (per device)
-        function sGet(key, def) {
-            if (!dataLoaded) return def;
-            const fullKey = deviceId + '_' + key;
-            const val = serverData[fullKey];
-            if (val === undefined || val === null) return def;
-            return val;
+        // ============================================
+        // PRESENCE (Live Users Count)
+        // ============================================
+        function initPresence() {
+            AppState.currentUserId = 'user_' + Math.random().toString(36).substring(2, 9);
+
+            setInterval(async () => {
+                if (!AppState.isOnline) return;
+                try {
+                    await fetchWithRetry(
+                        `${SUPABASE_URL}/rest/v1/presence`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'apikey': SUPABASE_KEY,
+                                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                                'Content-Type': 'application/json',
+                                'Prefer': 'resolution=merge-duplicates'
+                            },
+                            body: JSON.stringify({
+                                user_id: AppState.currentUserId,
+                                app_key: SHARED_APP_KEY,
+                                last_seen: new Date().toISOString()
+                            })
+                        }
+                    );
+                } catch (e) {}
+            }, 30000);
+
+            setInterval(async () => {
+                if (!AppState.isOnline) return;
+                try {
+                    const fiveMinAgo = new Date(Date.now() - 5 * 60000).toISOString();
+                    const response = await fetchWithRetry(
+                        `${SUPABASE_URL}/rest/v1/presence?app_key=eq.${SHARED_APP_KEY}&last_seen=gte.${fiveMinAgo}&select=user_id`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'apikey': SUPABASE_KEY,
+                                'Authorization': `Bearer ${SUPABASE_KEY}`
+                            }
+                        }
+                    );
+                    const users = await response.json();
+                    AppState.liveUsers = new Set(users.map(u => u.user_id));
+                    updateLiveUsersUI();
+                } catch (e) {}
+            }, 10000);
         }
 
-        function sSet(key, val) {
-            if (!dataLoaded) return;
-            const fullKey = deviceId + '_' + key;
-            serverData[fullKey] = val;
-            serverSave(fullKey, val);
+        function updateLiveUsersUI() {
+            const count = AppState.liveUsers.size;
+            const countEl = document.getElementById('live-count');
+            const avatarsEl = document.getElementById('live-avatars');
+
+            if (!countEl || !avatarsEl) return;
+
+            countEl.textContent = count + ' онлайн';
+            avatarsEl.innerHTML = '';
+            const colors = ['#FB7185', '#F472B6', '#C084FC', '#34D399', '#FBBF24'];
+            let i = 0;
+            AppState.liveUsers.forEach(userId => {
+                if (i >= 3) return;
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                avatar.style.background = `linear-gradient(135deg, ${colors[i % colors.length]}, ${colors[(i + 1) % colors.length]})`;
+                avatar.textContent = userId.substring(5, 6).toUpperCase();
+                avatarsEl.appendChild(avatar);
+                i++;
+            });
         }
 
-        // Shared data (photo + letters)
-        function sharedGet(key, def) {
-            if (!dataLoaded) return def;
-            const fullKey = 'shared_' + key;
-            const val = serverData[fullKey];
-            if (val === undefined || val === null) return def;
-            return val;
+        // ============================================
+        // DATA ACCESS LAYER
+        // ============================================
+        async function getAppState() {
+            if (!AppState.data) {
+                AppState.data = await loadFromSupabase();
+            }
+            return AppState.data;
         }
 
-        function sharedSet(key, val) {
-            if (!dataLoaded) return;
-            const fullKey = 'shared_' + key;
-            serverData[fullKey] = val;
-            serverSave(fullKey, val);
+        async function updateAppState(updates) {
+            const current = await getAppState();
+            const newState = { ...current, ...updates, updated_at: new Date().toISOString() };
+            AppState.data = newState;
+            refreshUI();
+
+            const saved = await saveToSupabase(newState);
+            if (!saved) {
+                showToast('Сохранено локально. Синхронизируется при подключении 📱');
+            }
+            return newState;
         }
 
+        // ============================================
+        // UI REFRESH (Reactive Pattern)
+        // ============================================
+        function refreshUI() {
+            if (!AppState.data) return;
+            const state = AppState.data;
+
+            if (state.mood !== undefined) {
+                currentMood = state.mood;
+                updateMoodMeter();
+            }
+            if (state.garden !== undefined) {
+                renderGarden(state.garden);
+            }
+            if (state.streak !== undefined) {
+                const streakEl = document.getElementById('streak-text');
+                if (streakEl) streakEl.textContent = 'День ' + state.streak;
+            }
+            if (state.achievements) {
+                renderAchievements(state.achievements, state);
+            }
+            if (state.photo_url || state.photo_data) {
+                const photoUrl = state.photo_url || state.photo_data;
+                document.getElementById('photo-memory').classList.remove('hidden');
+                document.getElementById('photo-upload').classList.add('hidden');
+                document.getElementById('memory-img').src = photoUrl;
+            }
+            if (state.letters) {
+                renderFutureLetters(state.letters);
+            }
+            if (state.birthday) {
+                renderBirthday(state.birthday);
+            }
+        }
+
+        // ============================================
+        // CONTENT DATA
+        // ============================================
         const messages = {
             sad: [
                 "Светлана, даже когда тебе грустно — ты всё равно прекрасна 🌸",
@@ -520,7 +825,7 @@
             ],
             support: [
                 "Ты справишься. Ты уже справлялась с большим 💪",
-                "Верь в себя так, как я верю в тебя — безгранично ✨",
+                "Верь в себя так, как я верю в тебе — безгранично ✨",
                 "Ты сильнее, чем думаешь, и мягче, чем кажется 🌸",
                 "Каждый шаг — это победа, даже маленький. Горжусь тобой 💕",
                 "Ты не обязана быть идеальной. Ты и так чудесна 💖",
@@ -671,27 +976,70 @@
             "«Каждый закат — это напоминание, что завтра будет новый рассвет»"
         ];
 
-        const achievements = [
-            { id: 'first_visit', icon: '🌱', name: 'Первый шаг', desc: 'Открыть приложение впервые', condition: () => totalOpens >= 1 },
-            { id: 'streak_3', icon: '🔥', name: 'Начало привычки', desc: '3 дня подряд', condition: () => sGet('svetlana_streak', 0) >= 3 },
-            { id: 'streak_7', icon: '⭐', name: 'Неделя заботы', desc: '7 дней подряд', condition: () => sGet('svetlana_streak', 0) >= 7 },
-            { id: 'garden_full', icon: '🌸', name: 'Цветущий сад', desc: 'Вырастить все 12 цветов', condition: () => sGet('svetlana_garden', 0) >= 12 },
-            { id: 'mood_100', icon: '💖', name: 'Счастливая Светлана', desc: 'Достичь 100% настроения', condition: () => currentMood >= 100 },
-            { id: 'secret_found', icon: '🦋', name: 'Секретный агент', desc: 'Найти секретное сообщение', condition: () => sGet('svetlana_secret_found', false) }
+        const achievementsList = [
+            { id: 'first_visit', icon: '🌱', name: 'Первый шаг', desc: 'Открыть приложение впервые', condition: (s) => s.total_opens >= 1 },
+            { id: 'streak_3', icon: '🔥', name: 'Начало привычки', desc: '3 дня подряд', condition: (s) => s.streak >= 3 },
+            { id: 'streak_7', icon: '⭐', name: 'Неделя заботы', desc: '7 дней подряд', condition: (s) => s.streak >= 7 },
+            { id: 'garden_full', icon: '🌸', name: 'Цветущий сад', desc: 'Вырастить все 12 цветов', condition: (s) => s.garden >= 12 },
+            { id: 'mood_100', icon: '💖', name: 'Счастливая Светлана', desc: 'Достичь 100% настроения', condition: (s) => s.mood >= 100 },
+            { id: 'secret_found', icon: '🦋', name: 'Секретный агент', desc: 'Найти секретное сообщение', condition: (s) => s.secret_found }
         ];
 
         const emojis = { sad: "🤗", miss: "💌", lonely: "🌙", support: "💪", cute: "💖" };
-        const shownMessages = { sad: [], miss: [], lonely: [], support: [], cute: [] };
         let currentTyping = null, currentMood = 50, currentCategory = null, dailyShown = false, totalOpens = 0, currentTheme = 'rose';
         let soundEnabled = true, speakEnabled = false, audioCtx = null, currentMessageText = '';
+        let shownMessages = { sad: [], miss: [], lonely: [], support: [], cute: [] };
 
+        // ============================================
+        // INITIALIZATION
+        // ============================================
         document.addEventListener('DOMContentLoaded', async () => {
-            await serverLoad();
-            await registerDevice();
-            initDailyMessage(); initGarden(); initCalendar(); checkNightMode(); initShake(); loadStats();
-            initAchievements(); initQuote(); initWeather(); initBirthday(); initPhotoMemory(); initFutureLetter(); initTouchParticles();
-            initHoliday(); updateTimeGreeting(); initTilt();
+            // Setup network listeners
+            window.addEventListener('online', () => { 
+                updateConnectionStatus(true); 
+                syncPendingData();
+                initRealtime();
+            });
+            window.addEventListener('offline', () => updateConnectionStatus(false));
+
+            // Initialize app state from Supabase
+            document.getElementById('welcome-loading').classList.remove('hidden');
+            document.getElementById('welcome-btn').classList.add('hidden');
+
+            try {
+                await getAppState();
+                initDailyMessage();
+                initCalendar();
+                checkNightMode();
+                initShake();
+                initQuote();
+                initWeather();
+                initTouchParticles();
+                initHoliday();
+                updateTimeGreeting();
+                initTilt();
+                initRealtime();
+                initPresence();
+
+                document.getElementById('welcome-loading').classList.add('hidden');
+                document.getElementById('welcome-btn').classList.remove('hidden');
+            } catch (e) {
+                console.error('Init error:', e);
+                document.getElementById('welcome-loading').classList.add('hidden');
+                document.getElementById('welcome-btn').classList.remove('hidden');
+            }
         });
+
+        async function syncPendingData() {
+            const pending = localStorage.getItem('sv_app_pending');
+            if (pending && AppState.isOnline) {
+                try {
+                    const state = JSON.parse(pending);
+                    await saveToSupabase(state);
+                    showToast('Данные синхронизированы с облаком ☁️');
+                } catch (e) {}
+            }
+        }
 
         function updateTimeGreeting() {
             const hour = new Date().getHours();
@@ -700,14 +1048,14 @@
             else if (hour >= 12 && hour < 17) greeting = 'Привет, моя хорошая 💕';
             else if (hour >= 17 && hour < 22) greeting = 'Добрый вечер, звёздочка ✨';
             else greeting = 'Ты ещё не спишь, моя хорошая? 🌙';
-            document.getElementById('greeting-text').textContent = greeting;
+            const el = document.getElementById('greeting-text');
+            if (el) el.textContent = greeting;
         }
 
         function initHoliday() {
             const now = new Date();
             const month = now.getMonth() + 1;
             const day = now.getDate();
-            const bday = sGet('svetlana_birthday', '');
             let holidayType = null;
             let items = [];
             let duration = 5000;
@@ -715,9 +1063,15 @@
             if (month === 2 && day === 14) { holidayType = 'valentine'; items = ['💘','💖','💕','🌹','❤️']; }
             else if (month === 3 && day === 8) { holidayType = 'womensDay'; items = ['🌷','💐','🌸','💖','✨']; }
             else if ((month === 12 && day === 31) || (month === 1 && day === 1)) { holidayType = 'newYear'; items = ['❄️','🎄','⭐','✨','🎉']; }
-            else if (bday) {
-                const bDate = new Date(bday);
-                if (month === bDate.getMonth() + 1 && day === bDate.getDate()) { holidayType = 'birthday'; items = ['🎂','🎈','🎉','💖','✨']; }
+
+            // Check birthday from shared state
+            const state = AppState.data;
+            if (state && state.birthday) {
+                const bDate = new Date(state.birthday);
+                if (month === bDate.getMonth() + 1 && day === bDate.getDate()) { 
+                    holidayType = 'birthday'; 
+                    items = ['🎂','🎈','🎉','💖','✨']; 
+                }
             }
 
             if (holidayType) {
@@ -765,7 +1119,7 @@
         function toggleSpeak() {
             speakEnabled = !speakEnabled;
             const btn = document.getElementById('speak-btn');
-            btn.classList.toggle('active', speakEnabled);
+            if (btn) btn.classList.toggle('active', speakEnabled);
             showToast(speakEnabled ? 'Озвучка включена 🗣️' : 'Озвучка выключена');
         }
 
@@ -819,7 +1173,8 @@
 
         function toggleSound() {
             soundEnabled = !soundEnabled;
-            document.getElementById('sound-btn').textContent = soundEnabled ? '🔊' : '🔇';
+            const btn = document.getElementById('sound-btn');
+            if (btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
             showToast(soundEnabled ? 'Звук включен 🔊' : 'Звук выключен 🔇');
         }
 
@@ -827,34 +1182,38 @@
             const today = new Date();
             const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
             const quote = quotes[dayOfYear % quotes.length];
-            document.getElementById('daily-quote').textContent = quote;
-            document.getElementById('welcome-quote').textContent = quote;
+            const dq = document.getElementById('daily-quote');
+            const wq = document.getElementById('welcome-quote');
+            if (dq) dq.textContent = quote;
+            if (wq) wq.textContent = quote;
         }
 
         function newQuote() {
             const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
-            document.getElementById('daily-quote').textContent = randomQuote;
+            const dq = document.getElementById('daily-quote');
+            if (dq) dq.textContent = randomQuote;
         }
 
-        function initAchievements() {
+        function renderAchievements(unlocked, state) {
             const container = document.getElementById('achievements-container');
             const welcomeContainer = document.getElementById('welcome-badges');
-            const unlocked = sGet('svetlana_achievements', []);
+            if (!container) return;
+
             let count = 0;
             container.innerHTML = '';
-            welcomeContainer.innerHTML = '';
-            achievements.forEach(ach => {
-                const isUnlocked = unlocked.includes(ach.id) || ach.condition();
+            if (welcomeContainer) welcomeContainer.innerHTML = '';
+
+            achievementsList.forEach(ach => {
+                const isUnlocked = unlocked.includes(ach.id) || ach.condition(state);
                 if (isUnlocked && !unlocked.includes(ach.id)) {
                     unlocked.push(ach.id);
-                    sSet('svetlana_achievements', unlocked);
                 }
                 const badge = document.createElement('div');
                 badge.className = 'text-2xl ' + (isUnlocked ? 'achievement-badge' : 'opacity-30 grayscale');
                 badge.textContent = ach.icon;
                 badge.title = ach.name + (isUnlocked ? '' : ' (заблокировано)');
                 container.appendChild(badge);
-                if (isUnlocked) {
+                if (isUnlocked && welcomeContainer) {
                     const welcomeBadge = document.createElement('span');
                     welcomeBadge.className = 'text-xl';
                     welcomeBadge.textContent = ach.icon;
@@ -862,36 +1221,58 @@
                     count++;
                 }
             });
-            document.getElementById('achievements-count').textContent = count + '/' + achievements.length;
+
+            const countEl = document.getElementById('achievements-count');
+            if (countEl) countEl.textContent = count + '/' + achievementsList.length;
+
+            // Save updated achievements
+            if (state) {
+                state.achievements = unlocked;
+                updateAppState({ achievements: unlocked });
+            }
         }
 
-        function initDailyMessage() {
+        function initAchievements() {
+            const state = AppState.data;
+            if (state) renderAchievements(state.achievements || [], state);
+        }
+
+        async function initDailyMessage() {
             const today = new Date();
             const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 86400000);
             const dailyMsg = dailyMessages[dayOfYear % dailyMessages.length];
-            const lastVisit = sGet('svetlana_last_visit', '');
+
+            const state = await getAppState();
+            const lastVisit = state.last_visit;
             const todayStr = today.toDateString();
-            let streak = sGet('svetlana_streak', 0);
+            let streak = state.streak || 1;
+
             if (lastVisit === todayStr) {
-                dailyShown = sGet('svetlana_daily_shown', false);
+                dailyShown = state.daily_shown || false;
             } else {
                 const lastDate = lastVisit ? new Date(lastVisit) : null;
                 const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
                 if (lastDate && lastDate.toDateString() === yesterday.toDateString()) streak++;
                 else if (!lastDate || lastDate.toDateString() !== todayStr) streak = 1;
-                sSet('svetlana_last_visit', todayStr);
-                sSet('svetlana_streak', streak);
-                sSet('svetlana_daily_shown', false);
+
+                await updateAppState({
+                    last_visit: todayStr,
+                    streak: streak,
+                    daily_shown: false
+                });
                 dailyShown = false;
             }
-            document.getElementById('daily-preview').textContent = dailyMsg.substring(0, 50) + '...';
-            document.getElementById('streak-text').textContent = 'День ' + streak;
+
+            const dp = document.getElementById('daily-preview');
+            const st = document.getElementById('streak-text');
+            if (dp) dp.textContent = dailyMsg.substring(0, 50) + '...';
+            if (st) st.textContent = 'День ' + streak;
             window.currentDailyMessage = dailyMsg;
         }
 
-        function initGarden() {
+        function renderGarden(bloomed) {
             const container = document.getElementById('garden-container');
-            const bloomed = sGet('svetlana_garden', 0);
+            if (!container) return;
             const flowers = ['🌸','🌺','🌻','🌷','🌹','💐','🌼','🪷','🌿','🌱','🍀','✨'];
             container.innerHTML = '';
             for (let i = 0; i < 12; i++) {
@@ -900,22 +1281,37 @@
                 flower.textContent = flowers[i];
                 container.appendChild(flower);
             }
-            document.getElementById('garden-count').textContent = bloomed + '/12 цветов';
+            const gc = document.getElementById('garden-count');
+            if (gc) gc.textContent = bloomed + '/12 цветов';
         }
 
-        function bloomFlower() {
-            const bloomed = sGet('svetlana_garden', 0);
-            if (bloomed < 12) { sSet('svetlana_garden', bloomed + 1); initGarden(); initAchievements(); }
+        function initGarden() {
+            const state = AppState.data;
+            if (state) renderGarden(state.garden || 0);
+        }
+
+        async function bloomFlower() {
+            const state = await getAppState();
+            const bloomed = state.garden || 0;
+            if (bloomed < 12) {
+                await updateAppState({ garden: bloomed + 1 });
+                initGarden();
+                initAchievements();
+            }
         }
 
         function initCalendar() {
             const grid = document.getElementById('calendar-grid');
+            if (!grid) return;
             const now = new Date();
             const year = now.getFullYear(), month = now.getMonth();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const firstDay = new Date(year, month, 1).getDay();
             const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
-            document.getElementById('calendar-month').textContent = monthNames[month];
+
+            const cm = document.getElementById('calendar-month');
+            if (cm) cm.textContent = monthNames[month];
+
             const weekDays = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
             weekDays.forEach(day => {
                 const el = document.createElement('div');
@@ -923,9 +1319,13 @@
                 el.textContent = day;
                 grid.appendChild(el);
             });
+
             const startOffset = firstDay === 0 ? 6 : firstDay - 1;
             for (let i = 0; i < startOffset; i++) { grid.appendChild(document.createElement('div')); }
-            const visitedDays = sGet('svetlana_visited_days', []);
+
+            const state = AppState.data;
+            const visitedDays = state ? (state.visited_days || []) : [];
+
             for (let day = 1; day <= daysInMonth; day++) {
                 const el = document.createElement('div');
                 const dateStr = new Date(year, month, day).toDateString();
@@ -937,10 +1337,15 @@
             }
         }
 
-        function markTodayVisited() {
-            const visitedDays = sGet('svetlana_visited_days', []);
+        async function markTodayVisited() {
+            const state = await getAppState();
+            const visitedDays = state.visited_days || [];
             const todayStr = new Date().toDateString();
-            if (!visitedDays.includes(todayStr)) { visitedDays.push(todayStr); sSet('svetlana_visited_days', visitedDays); initCalendar(); }
+            if (!visitedDays.includes(todayStr)) {
+                visitedDays.push(todayStr);
+                await updateAppState({ visited_days: visitedDays });
+                initCalendar();
+            }
         }
 
         function checkNightMode() {
@@ -955,6 +1360,7 @@
 
         function createStars() {
             const container = document.getElementById('stars-container');
+            if (!container) return;
             container.innerHTML = '';
             for (let i = 0; i < 50; i++) {
                 const star = document.createElement('div');
@@ -992,7 +1398,7 @@
             }
         }
 
-        function triggerShakeSecret() {
+        async function triggerShakeSecret() {
             if (!document.getElementById('message-screen').classList.contains('hidden')) return;
             if (!document.getElementById('welcome-screen').classList.contains('hidden')) return;
             const secret = secretMessages[Math.floor(Math.random() * secretMessages.length)];
@@ -1009,24 +1415,23 @@
             currentMessageText = secret;
             createHeartParticles();
             currentCategory = 'secret';
-            sSet('svetlana_secret_found', true);
-            initAchievements();
-            document.getElementById('shake-hint').style.display = 'none';
-        }
 
-        function loadStats() { 
-            totalOpens = sGet('svetlana_total_opens', 0); 
-            currentMood = sGet('mood', 50);
+            await updateAppState({ secret_found: true });
+            initAchievements();
+
+            const sh = document.getElementById('shake-hint');
+            if (sh) sh.style.display = 'none';
         }
 
         function setTheme(theme) {
             currentTheme = theme;
             document.querySelectorAll('.theme-dot').forEach(dot => dot.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event && event.target) event.target.classList.add('active');
             const body = document.body;
             if (theme === 'lavender') body.style.background = 'linear-gradient(135deg, #F3E8FF 0%, #E0E7FF 50%, #EDE9FE 100%)';
             else if (theme === 'peach') body.style.background = 'linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 50%, #FEF3C7 100%)';
             else body.style.background = 'linear-gradient(135deg, #FFF0F5 0%, #FFE4E1 50%, #FFF8F0 100%)';
+            updateAppState({ theme: theme });
         }
 
         function openReply() {
@@ -1034,17 +1439,21 @@
             window.open('https://t.me/share/url?text=' + text, '_blank');
         }
 
-        function showMain() {
+        async function showMain() {
             document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('main-screen').classList.remove('hidden');
             document.getElementById('main-screen').style.animation = 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards';
-            createParticles(); markTodayVisited();
-            totalOpens++; sSet('svetlana_total_opens', totalOpens);
+            createParticles();
+            await markTodayVisited();
+
+            const state = await getAppState();
+            await updateAppState({ total_opens: (state.total_opens || 0) + 1 });
             initAchievements();
         }
 
         function getRandomMessage(category) {
-            const msgList = messages[category], shownList = shownMessages[category];
+            const msgList = messages[category];
+            const shownList = shownMessages[category];
             if (shownList.length >= msgList.length) shownList.length = 0;
             const available = [];
             for (let i = 0; i < msgList.length; i++) if (!shownList.includes(i)) available.push(i);
@@ -1053,14 +1462,22 @@
             return msgList[idx];
         }
 
-        function showMessage(category) {
+        async function showMessage(category) {
             playSound();
             if (window.navigator && window.navigator.vibrate) navigator.vibrate([10, 30, 10]);
             const hour = new Date().getHours();
             let randomMsg;
-            if ((hour >= 22 || hour < 6) && Math.random() > 0.5) randomMsg = nightMessages[Math.floor(Math.random() * nightMessages.length)];
-            else randomMsg = getRandomMessage(category);
-            if (totalOpens >= 10 && Math.random() > 0.8) randomMsg = secretMessages[Math.floor(Math.random() * secretMessages.length)];
+            if ((hour >= 22 || hour < 6) && Math.random() > 0.5) {
+                randomMsg = nightMessages[Math.floor(Math.random() * nightMessages.length)];
+            } else {
+                randomMsg = getRandomMessage(category);
+            }
+
+            const state = await getAppState();
+            if ((state.total_opens || 0) >= 10 && Math.random() > 0.8) {
+                randomMsg = secretMessages[Math.floor(Math.random() * secretMessages.length)];
+            }
+
             document.getElementById('message-emoji').textContent = emojis[category];
             document.getElementById('message-screen').classList.remove('hidden');
             const textEl = document.getElementById('message-text');
@@ -1076,9 +1493,11 @@
             currentCategory = category;
         }
 
-        function showDailySpecial() {
+        async function showDailySpecial() {
             if (dailyShown) { showToast('Сегодняшнее послание уже открыто 💕'); return; }
-            dailyShown = true; sSet('svetlana_daily_shown', true);
+            dailyShown = true;
+            await updateAppState({ daily_shown: true });
+
             const today = new Date();
             const dateStr = today.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
             document.getElementById('message-emoji').textContent = '✨';
@@ -1111,11 +1530,14 @@
             }, 400);
         }
 
-        function handleFeedback(helped) {
+        async function handleFeedback(helped) {
             document.getElementById('feedback-screen').classList.add('hidden');
             if (helped) {
                 currentMood = Math.min(100, currentMood + 15);
-                updateMoodMeter(); createConfetti(); bloomFlower();
+                await updateAppState({ mood: currentMood });
+                updateMoodMeter();
+                createConfetti();
+                bloomFlower();
                 showToast('Ты заслуживаешь счастья! 💖');
             } else {
                 if (currentCategory && currentCategory !== 'daily' && currentCategory !== 'secret') {
@@ -1125,15 +1547,20 @@
         }
 
         function updateMoodMeter() {
-            document.getElementById('mood-bar').style.width = currentMood + '%';
-            document.getElementById('mood-percent').textContent = currentMood + '%';
-            sSet('mood', currentMood);
-            const emoji = document.getElementById('mood-emoji');
-            if (currentMood < 30) emoji.textContent = '😔';
-            else if (currentMood < 50) emoji.textContent = '😐';
-            else if (currentMood < 70) emoji.textContent = '🙂';
-            else if (currentMood < 90) emoji.textContent = '😊';
-            else emoji.textContent = '🥰';
+            const mb = document.getElementById('mood-bar');
+            const mp = document.getElementById('mood-percent');
+            const me = document.getElementById('mood-emoji');
+
+            if (mb) mb.style.width = currentMood + '%';
+            if (mp) mp.textContent = currentMood + '%';
+
+            if (me) {
+                if (currentMood < 30) me.textContent = '😔';
+                else if (currentMood < 50) me.textContent = '😐';
+                else if (currentMood < 70) me.textContent = '🙂';
+                else if (currentMood < 90) me.textContent = '😊';
+                else me.textContent = '🥰';
+            }
         }
 
         function createConfetti() {
@@ -1191,8 +1618,11 @@
         }
 
         function showToast(text) {
-            const toast = document.getElementById('toast'), toastText = document.getElementById('toast-text');
-            toastText.textContent = text; toast.classList.remove('hidden');
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            if (!toast || !toastText) return;
+            toastText.textContent = text;
+            toast.classList.remove('hidden');
             setTimeout(() => { toast.classList.add('hidden'); }, 2500);
         }
 
@@ -1245,20 +1675,27 @@
                         else if (code >= 95) { emoji = '⛈️'; desc = 'Гроза'; msg = 'Светлана, даже в грозу ты — мой спокойный свет ⛈️'; }
                         else if (code >= 1 && code <= 3) { emoji = '☁️'; desc = 'Облачно'; msg = 'Светлана, даже в пасмурный день ты согреваешь мир ☁️'; }
                         else { msg = 'Светлана, сегодня солнечно — как твоя улыбка ☀️'; }
-                        document.getElementById('weather-emoji').textContent = emoji;
-                        document.getElementById('weather-temp').textContent = temp + '°C';
-                        document.getElementById('weather-desc').textContent = desc;
-                        document.getElementById('weather-message').textContent = msg;
-                        document.getElementById('weather-widget').classList.remove('hidden');
+
+                        const we = document.getElementById('weather-emoji');
+                        const wt = document.getElementById('weather-temp');
+                        const wd = document.getElementById('weather-desc');
+                        const wm = document.getElementById('weather-message');
+                        const ww = document.getElementById('weather-widget');
+
+                        if (we) we.textContent = emoji;
+                        if (wt) wt.textContent = temp + '°C';
+                        if (wd) wd.textContent = desc;
+                        if (wm) wm.textContent = msg;
+                        if (ww) ww.classList.remove('hidden');
                     })
                     .catch(() => {});
             }, () => {});
         }
 
-        function initBirthday() {
-            const savedDate = sGet('svetlana_birthday', '');
+        function renderBirthday(savedDate) {
             if (!savedDate) {
                 const section = document.getElementById('birthday-section');
+                if (!section) return;
                 section.classList.remove('hidden');
                 section.innerHTML = '<div class="flex items-center justify-between mb-2"><span class="text-xs font-bold text-rose-400 uppercase tracking-wider">🎂 День рождения</span></div><input type="date" id="birthday-input" class="w-full px-3 py-2 rounded-xl bg-white/50 border border-rose-200 text-sm text-gray-600 focus:outline-none focus:border-rose-400 mb-2"><button onclick="saveBirthday()" class="w-full py-2 rounded-xl bg-gradient-to-r from-rose-400 to-pink-400 text-white text-sm font-bold shadow-md">Сохранить 🎂</button>';
                 return;
@@ -1269,60 +1706,60 @@
             if (nextBday < now) nextBday.setFullYear(now.getFullYear() + 1);
             const diff = Math.ceil((nextBday - now) / (1000 * 60 * 60 * 24));
             const section = document.getElementById('birthday-section');
+            if (!section) return;
             section.classList.remove('hidden');
+            const bc = document.getElementById('birthday-countdown');
+            if (!bc) return;
+
             if (diff === 0) {
-                document.getElementById('birthday-countdown').innerHTML = '🎉 Сегодня твой день рождения! Ты — самый прекрасный подарок этому миру 💖';
+                bc.innerHTML = '🎉 Сегодня твой день рождения! Ты — самый прекрасный подарок этому миру 💖';
                 const hMsg = holidayMessages.birthday[Math.floor(Math.random() * holidayMessages.birthday.length)];
                 setTimeout(() => { showHolidayMessage(hMsg); }, 1000);
             } else {
-                document.getElementById('birthday-countdown').textContent = '🎂 До твоего дня рождения: ' + diff + ' ' + (diff === 1 ? 'день' : diff < 5 ? 'дня' : 'дней');
+                bc.textContent = '🎂 До твоего дня рождения: ' + diff + ' ' + (diff === 1 ? 'день' : diff < 5 ? 'дня' : 'дней');
             }
         }
 
-        function showHolidayMessage(msg) {
-            document.getElementById('message-emoji').textContent = '🎉';
-            document.getElementById('message-screen').classList.remove('hidden');
-            const textEl = document.getElementById('message-text');
-            textEl.textContent = ''; textEl.classList.add('typing-cursor');
-            let i = 0;
-            if (currentTyping) clearInterval(currentTyping);
-            currentTyping = setInterval(() => {
-                if (i < msg.length) { textEl.textContent += msg.charAt(i); i++; }
-                else { clearInterval(currentTyping); textEl.classList.remove('typing-cursor'); autoSpeak(msg); }
-            }, 40);
-            currentMessageText = msg;
-            createHeartParticles();
-            currentCategory = 'holiday';
+        function initBirthday(date) {
+            renderBirthday(date);
         }
 
-        function saveBirthday() {
+        async function saveBirthday() {
             const val = document.getElementById('birthday-input').value;
             if (!val) return;
-            sSet('svetlana_birthday', val);
+            await updateAppState({ birthday: val });
             showToast('День рождения сохранён! 🎂');
-            initBirthday();
+            renderBirthday(val);
         }
 
-        function handlePhotoUpload(e) {
+        async function handlePhotoUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
+
+            const statusEl = document.getElementById('photo-sync-status');
+            if (statusEl) statusEl.textContent = 'Загрузка...';
+
             const reader = new FileReader();
-            reader.onload = (ev) => {
+            reader.onload = async (ev) => {
                 const img = new Image();
-                img.onload = () => {
+                img.onload = async () => {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    const maxSize = 400;
+                    const maxSize = 800;
                     let w = img.width, h = img.height;
                     if (w > h) { if (w > maxSize) { h *= maxSize / w; w = maxSize; } }
                     else { if (h > maxSize) { w *= maxSize / h; h = maxSize; } }
                     canvas.width = w; canvas.height = h;
                     ctx.drawImage(img, 0, 0, w, h);
                     const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                    localStorage.setItem('svetlana_photo_local', dataUrl);
-                    sharedSet('photo', dataUrl);
-                    initPhotoMemory();
-                    showToast('Фото сохранено! 📸');
+
+                    await updateAppState({ photo_data: dataUrl, photo_url: dataUrl });
+
+                    document.getElementById('photo-memory').classList.remove('hidden');
+                    document.getElementById('photo-upload').classList.add('hidden');
+                    document.getElementById('memory-img').src = dataUrl;
+                    if (statusEl) statusEl.textContent = '✓ Синхронизировано';
+                    showToast('Фото сохранено для всех! 📸');
                 };
                 img.src = ev.target.result;
             };
@@ -1340,34 +1777,22 @@
         }
 
         function initPhotoMemory() {
-            let photo = sharedGet('photo', '');
-            if (!photo) {
-                photo = localStorage.getItem('svetlana_photo_local') || '';
-                console.log('Photo from localStorage fallback:', photo ? 'found' : 'not found');
-            }
-            if (photo) {
+            const state = AppState.data;
+            if (state && (state.photo_url || state.photo_data)) {
+                const photoUrl = state.photo_url || state.photo_data;
                 document.getElementById('photo-memory').classList.remove('hidden');
                 document.getElementById('photo-upload').classList.add('hidden');
-                document.getElementById('memory-img').src = photo;
-                document.getElementById('memory-caption').textContent = 'Нажми на фото, чтобы открыть на весь экран';
+                document.getElementById('memory-img').src = photoUrl;
             }
         }
 
-        function initFutureLetter() {
-            let letters = sharedGet('letters', []);
-            if (!letters || letters.length === 0) {
-                const localLetters = localStorage.getItem('svetlana_letters_local');
-                if (localLetters) {
-                    try { letters = JSON.parse(localLetters); } catch(e) {}
-                }
-            }
+        function renderFutureLetters(letters) {
             const now = new Date().toISOString().split('T')[0];
             const ready = letters.filter(l => l.date <= now && !l.opened);
             if (ready.length > 0) {
                 const letter = ready[0];
                 letter.opened = true;
-                localStorage.setItem('svetlana_letters_local', JSON.stringify(letters));
-                sharedSet('letters', letters);
+                updateAppState({ letters: letters });
                 document.getElementById('future-letter-display').classList.remove('hidden');
                 document.getElementById('future-letter-form').classList.add('hidden');
                 document.getElementById('future-letter-text').textContent = letter.text;
@@ -1375,17 +1800,23 @@
             }
         }
 
-        function saveFutureLetter() {
+        function initFutureLetters(letters) {
+            renderFutureLetters(letters);
+        }
+
+        async function saveFutureLetter() {
             const date = document.getElementById('future-date').value;
             const text = document.getElementById('future-text').value.trim();
             if (!date || !text) { showToast('Заполни дату и текст 💌'); return; }
-            const letters = sharedGet('letters', []);
+
+            const state = await getAppState();
+            const letters = state.letters || [];
             letters.push({ date: date, text: text, created: new Date().toISOString(), opened: false });
-            localStorage.setItem('svetlana_letters_local', JSON.stringify(letters));
-            sharedSet('letters', letters);
+            await updateAppState({ letters: letters });
+
             document.getElementById('future-date').value = '';
             document.getElementById('future-text').value = '';
-            showToast('Письмо сохранено! Придёт в нужный день 📬');
+            showToast('Письмо сохранено! Все увидят в нужный день 📬');
         }
 
         function initTouchParticles() {
@@ -1407,6 +1838,22 @@
             el.style.height = '50px';
             document.body.appendChild(el);
             setTimeout(() => el.remove(), 800);
+        }
+
+        function showHolidayMessage(msg) {
+            document.getElementById('message-emoji').textContent = '🎉';
+            document.getElementById('message-screen').classList.remove('hidden');
+            const textEl = document.getElementById('message-text');
+            textEl.textContent = ''; textEl.classList.add('typing-cursor');
+            let i = 0;
+            if (currentTyping) clearInterval(currentTyping);
+            currentTyping = setInterval(() => {
+                if (i < msg.length) { textEl.textContent += msg.charAt(i); i++; }
+                else { clearInterval(currentTyping); textEl.classList.remove('typing-cursor'); autoSpeak(msg); }
+            }, 40);
+            currentMessageText = msg;
+            createHeartParticles();
+            currentCategory = 'holiday';
         }
 
         document.addEventListener('touchmove', function(e) {
